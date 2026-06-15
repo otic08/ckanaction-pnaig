@@ -15,7 +15,7 @@ components:
       description: CKAN API token
 servers:
   - url: http://localhost:5000/api/3/action
-  - url: '{protocol}://{domain}/api/3/action'
+  - url: "{protocol}://{domain}/api/3/action"
     description: Your custom server running the CKAN Actions API (v3).
     variables:
       protocol:
@@ -24,6 +24,3962 @@ servers:
           - http
         default: https
       domain:
-        default: 'demo.ckan.org'
+        default: "demo.ckan.org"
 paths:
-  
+  package_list:
+    post:
+      operationId: package_list
+      summary: package_list
+      description: This endpoint lists CKAN resources.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                limit:
+                  type: integer
+                  description: if given, the list of datasets will be broken into pages of at most `limit` datasets per page and only one page will be returned at a time
+                offset:
+                  type: integer
+                  description: when limit is given, the offset to start returning packages from
+      x-codeSamples:
+        - lang: rust
+          label: Rust SDK (ckanaction) example
+          source: |
+            use dotenvy::dotenv;
+
+            #[tokio::main]
+            async fn main() -> Result<(), Box<dyn std::error::Error>> {
+                // Load environment variables from .env file
+                dotenv()?;
+
+                // Initialize and build CKAN struct
+                let ckan = ckanaction::CKAN::builder()
+                    .url("http://localhost:5000")
+                    .token(dotenvy::var("CKAN_API_TOKEN")?)
+                    .build();
+
+                // Send request to /package_list and print output
+                let result = ckan.package_list()
+                    .limit(5) // <-- This is an optional parameter you can remove
+                    .call()
+                    .await?;
+                println!("{result:#?}");
+
+                Ok(())
+            }
+  "current_package_list_with_resources":
+    post:
+      operationId: current_package_list_with_resources
+      summary: current_package_list_with_resources
+      description: |
+        Return a list of the site's datasets (packages) and their resources.
+
+        The list is sorted most-recently-modified first.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                limit:
+                  type: integer
+                  description: "if given, the list of datasets will be broken into pages of at most `limit` datasets per page and only one page will be returned at a time"
+                offset:
+                  type: integer
+                  description: "when `limit` is given, the offset to start returning packages from"
+  "member_list":
+    post:
+      operationId: member_list
+      summary: member_list
+      description: |
+        Return the members of a group.
+
+        The user must have permission to "get" the group.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id or name of the group
+                object_type:
+                  type: string
+                  description: "restrict the members returned to those of a given type, e.g. `'user'` or `'package'` (default: `None`)"
+                capacity:
+                  type: string
+                  description: "restrict the members returned to those with a given capacity, e.g. `'member'`, `'editor'`, `'admin'`, `'public'`, `'private'` (optional, default: `None`)"
+  "package_collaborator_list":
+    post:
+      operationId: package_collaborator_list
+      summary: package_collaborator_list
+      description: |
+        Return the list of all collaborators for a given dataset (package).
+
+        Currently you must be an Admin on the dataset owner organization to manage collaborators.
+
+        Note: This action requires the collaborators feature to be enabled with the [`ckan.auth.allow_dataset_collaborators`](https://docs.ckan.org/en/2.11/maintaining/configuration.html#ckan-auth-allow-dataset-collaborators) configuration option.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id or name of the dataset
+                capacity:
+                  type: string
+                  description: if provided, only the users with this capacity are returned
+  "package_collaborator_list_for_user":
+    post:
+      operationId: package_collaborator_list_for_user
+      summary: package_collaborator_list_for_user
+      description: |
+        Return the list of all datasets the user is a collaborator in.
+
+        Note: This action requires the collaborators feature to be enabled with the [`ckan.auth.allow_dataset_collaborators`](https://docs.ckan.org/en/2.11/maintaining/configuration.html#ckan-auth-allow-dataset-collaborators) configuration option.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id or name of the user
+                capacity:
+                  type: string
+                  description: if provided, only datasets where the user has this capacity are returned
+  "group_list":
+    post:
+      operationId: group_list
+      summary: group_list
+      description: |
+        Return a list of the names of the site's groups.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                  description: "the type of group to list (default: `'group'`), see docs for `IGroupForm`"
+                sort:
+                  type: string
+                  description: 'sorting of the search results. Default: "title asc" string of field name and sort-order. The allowed fields are ''name'', ''package_count'' and ''title'''
+                limit:
+                  type: integer
+                  description: "the maximum number of groups returned. Default: `1000` when `all_fields=false` unless set in site's configuration `ckan.group_and_organization_list_max`. Default: 25 when `all_fields=true` unless set in site's configuration `ckan.group_and_organization_list_all_fields_max`"
+                offset:
+                  type: integer
+                  description: "when `limit` is given, the offset to start returning groups from"
+                groups:
+                  type: array
+                  items:
+                    type: string
+                  description: a list of names of the groups to return, if given only groups whose names are in this list will be returned
+                all_fields:
+                  type: boolean
+                  description: "return group dictionaries instead of just names. Only core fields are returned - get some more using the include_* options. Returning a list of packages is too expensive, so the *packages* property for each group is deprecated, but there is a count of the packages in the *package_count* property. (default: `False`)"
+                include_dataset_count:
+                  type: boolean
+                  # If `all_fields` is true?
+                  description: "if `all_fields`, include the full package_count (default: `True`)"
+                include_extras:
+                  type: boolean
+                  description: "if `all_fields`, include the group extra fields (default: `False`)"
+                include_tags:
+                  type: boolean
+                  description: "if `all_fields`, include the group tags"
+                include_groups:
+                  type: boolean
+                  description: "if `all_fields`, include the groups the groups are in"
+                include_users:
+                  type: boolean
+                  description: "if `all_fields`, include the group users"
+  "organization_list":
+    post:
+      operationId: organization_list
+      summary: organization_list
+      description: |
+        Return a list of the names of the site's organizations.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                  description: "the type of organization to list (default: `'group'`), see docs for `IGroupForm`"
+                sort:
+                  type: string
+                  description: 'sorting of the search results. Default: "title asc" string of field name and sort-order. The allowed fields are ''name'', ''package_count'' and ''title'''
+                limit:
+                  type: integer
+                  description: "the maximum number of organizations returned. Default: `1000` when `all_fields=false` unless set in site's configuration `ckan.group_and_organization_list_max`. Default: 25 when `all_fields=true` unless set in site's configuration `ckan.group_and_organization_list_all_fields_max`"
+                offset:
+                  type: integer
+                  description: "when `limit` is given, the offset to start returning organizations from"
+                organizations:
+                  type: array
+                  items:
+                    type: string
+                  # Original docs typo seems like they say groups instead of organizations
+                  description: a list of names of the organizations to return, if given only organizations whose names are in this list will be returned
+                all_fields:
+                  type: boolean
+                  # Original docs typo seems like they say group instead of organization
+                  description: "return organization dictionaries instead of just names. Only core fields are returned - get some more using the include_* options. Returning a list of packages is too expensive, so the *packages* property for each group is deprecated, but there is a count of the packages in the *package_count* property. (default: `False`)"
+                include_dataset_count:
+                  type: boolean
+                  # If `all_fields` is true?
+                  description: "if `all_fields`, include the full package_count (default: `True`)"
+                include_extras:
+                  type: boolean
+                  description: "if `all_fields`, include the organization extra fields (default: `False`)"
+                include_tags:
+                  type: boolean
+                  description: "if `all_fields`, include the organization tags (default: `False`)"
+                include_groups:
+                  type: boolean
+                  # Modified to organizations instead of groups?
+                  description: "if `all_fields`, include the organizations the organizations are in"
+                include_users:
+                  type: boolean
+                  description: "if `all_fields`, include the organization users"
+  "group_list_authz":
+    post:
+      operationId: group_list_authz
+      summary: group_list_authz
+      description: |
+        Return the list of groups that the user is authorized to edit.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                available_only:
+                  type: boolean
+                  description: "remove the existing groups in the package (default: `False`)"
+                am_member:
+                  type: boolean
+                  description: "if `True` return only the groups the logged-in user is a member of, otherwise return all groups that the user is authorized to edit (for example, sysadmin users are authorized to edit all groups) (default: `False`)"
+  "organization_list_for_user":
+    post:
+      operationId: organization_list_for_user
+      summary: organization_list_for_user
+      description: |
+        Return the organizations that the user has a given permission for.
+
+        Specifically it returns the list of organizations that the currently authorized user has a given permission (for example: "manage_group") against.
+
+        By default this returns the list of organizations that the currently authorized user is member of, in any capacity.
+
+        When a user becomes a member of an organization in CKAN they're given a "capacity" (sometimes called a "role"), for example "member", "editor" or "admin".
+
+        Each of these roles has certain permissions associated with it. For example the admin role has the "admin" permission (which means they have permission to do anything). The editor role has permissions like "create_dataset", "update_dataset" and "delete_dataset". The member role has the "read" permission.
+
+        This function returns the list of organizations that the authorized user has a given permission for. For example the list of organizations that the user is an admin of, or the list of organizations that the user can create datasets in. This takes account of when permissions cascade down an organization hierarchy.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the name or id of the user to get the organization list for (defaults to the currently authorized user, logged in or via the API key)
+                permission:
+                  type: string
+                  description: 'the permission the user has against the returned organizations, for example `"read"` or `"create_dataset"` (default: `"manage_group"`)'
+                include_dataset_count:
+                  type: boolean
+                  description: "include the package_count in each org (default: `False`)"
+  "license_list":
+    post:
+      operationId: license_list
+      summary: license_list
+      description: |
+        Return the list of licenses available for datasets on the site.
+  "tag_list":
+    post:
+      operationId: tag_list
+      summary: tag_list
+      description: |
+        Return a list of the site's tags.
+
+        By default only free tags (tags that don't belong to a vocabulary) are returned. If the `vocabulary_id` argument is given then only tags belonging to that vocabulary will be returned instead.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                query:
+                  type: string
+                  description: a tag name query to search for, if given only tags whose names contain this string will be returned
+                vocabulary_id:
+                  type: string
+                  # if "give" maybe should be if "given"?
+                  description: the id or name of a vocabulary, if give only tags that belong to this vocabulary will be returned
+                all_fields:
+                  type: boolean
+                  description: "return full tag dictionaries instead of just names (default: `False`)"
+  "user_list":
+    post:
+      operationId: user_list
+      summary: user_list
+      description: |
+        Return a list of the site's user accounts.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                q:
+                  type: string
+                  description: filter the users returned to those whose names contain a string
+                email:
+                  type: string
+                  description: filter the users returned to those whose email match a string (you must be a sysadmin to use this filter)
+                order_by:
+                  type: string
+                  description: "which field to sort the list (default: `'display_name'`)."
+                  enum:
+                    [
+                      "id",
+                      "name",
+                      "fullname",
+                      "display_name",
+                      "created",
+                      "about",
+                      "sysadmin",
+                      "number_created_packages",
+                    ]
+                all_fields:
+                  type: boolean
+                  description: return full user disctionaries instead of just names
+                include_site_user:
+                  type: boolean
+                  description: "add site_user to the result (default: `False`)"
+  "package_relationships_list":
+    post:
+      operationId: package_relationships_list
+      summary: package_relationships_list
+      description: |
+        Return a datset's relationships.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id or name of the first package
+                id2:
+                  type: string
+                  description: the id or name of the second package
+                rel:
+                  type: string
+                  description: "relationship as string, see `package_relationship_create()` for the relationship types"
+  "package_show":
+    post:
+      operationId: package_show
+      summary: package_show
+      description: Return the metadata of a dataset and its resources.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+                - id
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id or name of the dataset
+                use_default_schema:
+                  type: boolean
+                  description: use default package schema instead of a custom schema defined with an IDatasetForm plugin
+                include_plugin_data:
+                  type: boolean
+                  description: Include the internal plugin data object (sysadmin only)
+      x-codeSamples:
+        - lang: rust
+          label: Rust SDK (ckanaction) example
+          source: |
+            use dotenvy::dotenv;
+
+            #[tokio::main]
+            async fn main() -> Result<(), Box<dyn std::error::Error>> {
+                // Load environment variables from .env file
+                dotenv()?;
+
+                // Initialize and build CKAN struct
+                let ckan = ckanaction::CKAN::builder()
+                    .url("http://localhost:5000")
+                    .token(dotenvy::var("CKAN_API_TOKEN")?)
+                    .build();
+
+                // Send request to /package_show and print output
+                let result = ckan.package_show()
+                    .id("6b044c6b-e896-4800-a94d-9e5147b25a25".to_string())
+                    .call()
+                    .await?;
+                println!("{result:#?}");
+
+                Ok(())
+            }
+  "resource_show":
+    post:
+      operationId: resource_show
+      summary: resource_show
+      description: Return the metadata of a resource.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id of the resource
+  "resource_view_show":
+    post:
+      operationId: resource_view_show
+      summary: resource_view_show
+      description: Return the metadata of a resource_view.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id of the resource_view
+  resource_view_list:
+    post:
+      operationId: resource_view_list
+      summary: resource_view_list
+      description: Return the list of resource views for a particular resource.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id of the resource
+  group_show:
+    post:
+      operationId: group_show
+      summary: group_show
+      description: Return the details of a group (only its first 1000 datasets are returned).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id or name of the group
+                include_datasets:
+                  type: boolean
+                  description: "include a truncated list of the group's datasets (default: `False`)"
+                include_dataset_count:
+                  type: boolean
+                  description: "include the full package_count (default: `True`)"
+                include_extras:
+                  type: boolean
+                  description: "include the group's extra fields (default: `True`)"
+                include_users:
+                  type: boolean
+                  description: "include the group's users (default: `True` if `ckan.auth.public_user_details` is `True` otherwise `False`)"
+                include_groups:
+                  type: boolean
+                  description: "include the group's sub groups (default `True`)"
+                include_tags:
+                  type: boolean
+                  description: "include the group's tags (default: `True`)"
+                include_followers:
+                  type: boolean
+                  description: "include the group's number of followers (default: `True`)"
+  organization_show:
+    post:
+      operationId: organization_show
+      summary: organization_show
+      # Original docs typo "a" instead of "an"
+      description: Return the details of an organization (only its first 10 datasets are returned).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id or name of the organization
+                include_datasets:
+                  type: boolean
+                  description: "include a truncated list of the org's datasets (default: `False`)"
+                include_dataset_count:
+                  type: boolean
+                  description: "include the full package_count (default: `True`)"
+                include_extras:
+                  type: boolean
+                  description: "include the organization's extra fields (default: `True`)"
+                include_users:
+                  type: boolean
+                  description: "include the organization's users (default: `True` if `ckan.auth.public_user_details` is `True` otherwise `False`)"
+                include_groups:
+                  type: boolean
+                  description: "include the organization's sub groups (default `True`)"
+                include_tags:
+                  type: boolean
+                  description: "include the organization's tags (default: `True`)"
+                include_followers:
+                  type: boolean
+                  description: "include the organization's number of followers (default: `True`)"
+  group_package_show:
+    post:
+      operationId: group_package_show
+      summary: group_package_show
+      description: Return the datasets (packages) of a group.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id or name of the group
+                limit:
+                  type: integer
+                  description: the maximum number of datasets to return
+  tag_show:
+    post:
+      operationId: tag_show
+      summary: tag_show
+      description: Return the details of a tag and all its datasets.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the name or id of the tag
+                vocabulary_id:
+                  type: string
+                  description: the id or name of the tag vocabulary that the tag is in - if it is not specified it will assume it is a free tag
+                include_datasets:
+                  type: boolean
+                  description: "include a list of the tag's datasets (up to a limit of 1000 - for more flexibility, use package_search) (default: `False`)"
+  user_show:
+    post:
+      operationId: user_show
+      summary: user_show
+      description: |
+        Return a user account.
+
+        Either the `id` should be passed or the user should be logged in.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id or name of the user
+                include_datasets:
+                  type: boolean
+                  description: "include a list of datasets the user has created. If it is the same user or a sysadmin requesting, it includes datasets that are draft or private (default: `False`, limit: 50)"
+                include_num_followers:
+                  type: boolean
+                  description: "include the number of followers the user has (default: `False`)"
+                include_password_hash:
+                  type: boolean
+                  description: "include the stored password hash (sysadmin only, default: `False`)"
+                include_plugin_extras:
+                  type: boolean
+                  description: "include the internal plugin extras object (sysadmin only, default: `False`)"
+  package_autocomplete:
+    post:
+      operationId: package_autocomplete
+      summary: package_autocomplete
+      description: |
+        Return a list of datasets (packages) that match a string.
+
+        Datasets with names or titles that contain the query string will be returned.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                q:
+                  type: string
+                  description: the string to search for
+                limit:
+                  type: integer
+                  # Original docs typo? Should this be max number of datasets?
+                  description: "the maximum number of datasets to return (default: `10`)"
+  format_autocomplete:
+    post:
+      operationId: format_autocomplete
+      summary: format_autocomplete
+      description: |
+        Return a list of resource formats whose names contain a string.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                q:
+                  type: string
+                  description: the string to search for
+                limit:
+                  type: integer
+                  description: "the maximum number of resource formats to return (default: `5`)"
+  user_autocomplete:
+    post:
+      operationId: user_autocomplete
+      summary: user_autocomplete
+      description: |
+        Return a list of user names that contain a string.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                q:
+                  type: string
+                  description: the string to search for
+                limit:
+                  type: integer
+                  description: "the maximum number of user names to return (default: `20`)"
+  group_autocomplete:
+    post:
+      operationId: group_autocomplete
+      summary: group_autocomplete
+      description: |
+        Return a list of group names that contain a string.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                q:
+                  type: string
+                  description: the string to search for
+                limit:
+                  type: integer
+                  description: "the maximum number of groups to return (default: `20`)"
+  organization_autocomplete:
+    post:
+      operationId: organization_autocomplete
+      summary: organization_autocomplete
+      description: |
+        Return a list of organization names that contain a string.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                q:
+                  type: string
+                  description: the string to search for
+                limit:
+                  type: integer
+                  description: "the maximum number of organizations to return (default: `20`)"
+  package_search:
+    post:
+      operationId: package_search
+      summary: package_search
+      description: |
+        Searches for packages satisfying a given search criteria.
+
+        This action accepts Solr search query parameters (details below), and returns a dictionary of results, including dictized datasets that match the search criteria, a search count, and also facet information.
+
+        Solr Parameters:
+
+        For more in depth treatment of each parameter, please read the [Solr Documentation](https://solr.apache.org/guide/6_6/common-query-parameters.html).
+
+        This action accepts a subset of Solr's search query parameters.
+
+        The following advanced Solr parameters are supported as well. Note that some of these are only available on particular Solr versions. See Solr's dismax and edismax documentation for further details on them:
+
+        `qf`, `wt`, `bf`, `boost`, `tie`, `defType`, `mm`
+
+        Examples:
+
+        - `q=flood` datasets containing the word *flood*, *floods*, or *flooding*
+        - `fq=tags:economy` datasets with the tag *economy*
+        - `facet.field=["tags"] facet.limit=10 rows=0` top 10 tags
+
+        <Callout title="Title" type="error">
+        There is an issue for the Body dropdown within this UI where an empty object `{}` is set for the `facet` field.
+
+        Please either remove this field by clicking "Open JSON editor" in the Body dropdown or set it to `true` (the default value) or `false`.
+        </Callout>
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                q:
+                  type: string
+                  description: the solr query.
+                fq:
+                  type: string
+                  description: "any filter queries to apply. Note: `+site_id:{ckan_site_id}` is added to this string prior to the query being executed."
+                fq_list:
+                  type: array
+                  items:
+                    type: string
+                  description: additional filter queries to apply.
+                sort:
+                  type: string
+                  description: "sorting of the search results. Default: 'score desc, metadata_modified desc'. As per the Solr documentation, this is a comma-separated string of field names and sort-orderings."
+                rows:
+                  type: integer
+                  description: "the maximum number of matching rows (datasets) to return. (default: 10, upper limit: 1000 unless set in site's configuration `ckan.search.rows_max`)"
+                start:
+                  type: integer
+                  description: the offset in the complete result for where the set of returned datasets should begin.
+                facet:
+                  type: boolean
+                  description: "whether to enable faceted results. Default: `True`"
+                facet.mincount:
+                  type: integer
+                  description: the minimum counts for facet fields should be included in the results.
+                facet.limit:
+                  type: integer
+                  description: the maximum number of values the facet fields return. A negative value means unlimited. This can be set instance-wide with the [search.facets.limit](https://docs.ckan.org/en/2.11/maintaining/configuration.html#search-facets-limit) config option. Default is 50.
+                facet.field:
+                  type: array
+                  items:
+                    type: string
+                  description: the fields to facet upon. Default empty. If empty, then the returned facet information is empty.
+                include_drafts:
+                  type: boolean
+                  description: "if `True`, draft datasets will be included in the results. A user will only be returned their own draft datasets, and a sysadmin will be returned all draft datasets. Optional, the default is `False`."
+                include_deleted:
+                  type: boolean
+                  description: "if `True`, deleted datasets will be included in the results (site configuration `ckan.search.remove_deleted_packages` must be set to `False`). Optional, the default is `False`."
+                include_private:
+                  type: boolean
+                  description: "if `True`, private datasets will be included in the results. Only private datasets from the user’s organizations will be returned and sysadmins will be returned all private datasets. Optional, the default is `False`."
+                use_default_schema:
+                  type: boolean
+                  description: "use default package schema instead of a custom schema defined with an IDatasetForm plugin (default: `False`)"
+      x-codeSamples:
+        - lang: rust
+          label: Rust SDK (ckanaction) example
+          source: |
+            use dotenvy::dotenv;
+
+            #[tokio::main]
+            async fn main() -> Result<(), Box<dyn std::error::Error>> {
+                // Load environment variables from .env file
+                dotenv()?;
+
+                // Initialize and build CKAN struct
+                let ckan = ckanaction::CKAN::builder()
+                    .url("http://localhost:5000")
+                    .token(dotenvy::var("CKAN_API_TOKEN")?)
+                    .build();
+
+                // Send request to /package_search and print output
+                let result = ckan.package_search()
+                    .q("*:*".to_string())
+                    .call()
+                    .await?;
+                println!("{result:#?}");
+
+                Ok(())
+            }
+  resource_search:
+    post:
+      operationId: resource_search
+      summary: resource_search
+      description: |
+        Searches for resources in public Datasets satisfying the search criteria.
+
+        It returns a dictionary with 2 fields: `count` and `results`. The `count` field contains the total number of Resources found without the limit or query parameters having an effect. The `results` field is a list of dictized Resource objects.
+
+        The 'query' parameter is a required field. It is a string of the form `{field}:{term}` or a list of strings, each of the same form. Within each string, `{field}` is a field or extra field on the Resource domain object.
+
+        If `{field}` is `"hash"`, then an attempt is made to match the `{term}` as a *prefix* of the `Resource.hash` field.
+
+        If `{field}` is an extra field, then an attempt is made to match against the extra fields stored against the Resource.
+
+        Note: The search is limited to search against extra fields declared in the config setting `ckan.extra_resource_fields`.
+
+        Note: Due to a Resource's extra fields being stored as a json blob, the match is made against the json string representation. As such, false positives may occur:
+
+        If the search criteria is:
+
+        ```
+        query = "field1:term1"
+        ```
+
+        Then a json blob with the string representation of:
+
+        ```json
+        {"field1": "foo", "field2": "term1"}
+        ```
+
+        will match the search criteria! This is a known short-coming of this approach.
+
+        All matches are made ignoring case; and apart from the `"hash"` field, a term matches if it is a substring of the field's value.
+
+        Finally, when specifying more than one search criteria, the criteria are AND-ed together.
+
+        The `order` parameter is used to control the ordering of the results. Currently only ordering one field is available, and in ascending order only.
+
+        The context may contain a flag, *search_query*, which if True will make this action behave as if being used by the internal search api. ie - the results will not be dictized, and SearchErrors are thrown for bad search queries (rather than ValidationErrors).
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                query:
+                  type: string
+                  description: the search criteria
+                order_by:
+                  type: string
+                  description: a field on the Resource model that orders the results
+                offset:
+                  type: integer
+                  description: apply an offset to the query
+                limit:
+                  type: integer
+                  description: apply a limit to the query
+  tag_search:
+    post:
+      operationId: tag_search
+      summary: tag_search
+      description: |
+        Return a list of tags whose names contain a given string.
+
+        By default only free tags (tags that don't belong to any vocabulary) are searched. If the `vocabulary_id` argument is given then only tags belonging to that vocabulary will be searched instead.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                query:
+                  type: string
+                  description: the string(s) to search for
+                vocabulary_id:
+                  type: string
+                  description: the id or name of the tag vocabulary to search in
+                limit:
+                  type: integer
+                  description: the maximum number of tags to return
+                offset:
+                  type: integer
+                  description: when `limit` is given, the offset to start returning tags from
+  tag_autocomplete:
+    post:
+      operationId: tag_autocomplete
+      summary: tag_autocomplete
+      description: |
+        Return a list of tag names that contain a given string.
+
+        By default only free tags (tags that don't belong to any vocabulary) are searched. If the `vocabulary_id` argument is given then only tags belonging to that vocabulary will be searched instead.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                query:
+                  type: string
+                  description: the string to search for
+                vocabulary_id:
+                  type: string
+                  description: the id or name of the tag vocabulary to search in
+                limit:
+                  type: integer
+                  description: the maximum number of tags to return
+                offset:
+                  type: integer
+                  description: when `limit` is given, the offset to start returning tags from
+  task_status_show:
+    post:
+      operationId: task_status_show
+      summary: task_status_show
+      description: |
+        Return a task status.
+
+        Either the `id` parameter or the `entity_id`, `task_type` *and* `key` parameters must be given.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id of the task status
+                entity_id:
+                  type: string
+                  description: the entity_id of the task status
+                task_type:
+                  type: string
+                  description: the task_type of the task status
+                key:
+                  type: string
+                  description: the key of the task status
+  term_translation_show:
+    post:
+      operationId: term_translation_show
+      summary: term_translation_show
+      description: |
+        Return the translations for the given term(s) and language(s).
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                terms:
+                  type: array
+                  items:
+                    type: string
+                  description: the terms to search for translations of, e.g. `Russian`, `nonfiction novel`
+                lang_codes:
+                  type: array
+                  items:
+                    type: string
+                  description: the language codes of the languages to search for translations into, e.g. `'en'`, `'de'` (default is to search for translations into any language)
+  get_site_user:
+    post:
+      operationId: get_site_user
+      summary: get_site_user
+      description: |
+        Return the CKAN site user.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                defer_commit:
+                  type: boolean
+                  description: "by default (or if set to `False`) `get_site_user` will commit and clean up the current transaction. If set to `True`, caller is responsible for commiting transaction after `get_site_user` is called. Leaving open connections can cause CLI commands to hang! (default: `False`)"
+  status_show:
+    get:
+      operationId: status_show
+      summary: status_show
+      description: This endpoint shows information about the CKAN instance.
+      x-codeSamples:
+        - lang: rust
+          label: Rust SDK (ckanaction) example
+          source: |
+            use dotenvy::dotenv;
+
+            #[tokio::main]
+            async fn main() -> Result<(), Box<dyn std::error::Error>> {
+                // Load environment variables from .env file
+                dotenv()?;
+
+                // Initialize and build CKAN struct
+                let ckan = ckanaction::CKAN::builder()
+                    .url("http://localhost:5000")
+                    .token(dotenvy::var("CKAN_API_TOKEN")?)
+                    .build();
+
+                // Send request to /status_show and print output
+                let result = ckan.status_show().await?;
+                println!("{result:#?}");
+
+                Ok(())
+            }
+  vocabulary_list:
+    post:
+      operationId: vocabulary_list
+      summary: vocabulary_list
+      description: |
+        Return a list of all the site's tag vocabularies.
+  vocabulary_show:
+    post:
+      operationId: vocabulary_show
+      summary: vocabulary_show
+      description: |
+        Return a single tag vocabulary.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id or name of the vocabulary
+  user_follower_count:
+    post:
+      operationId: user_follower_count
+      summary: user_follower_count
+      description: |
+        Returun the number of followers of a user.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id or name of the user
+  dataset_follower_count:
+    post:
+      operationId: dataset_follower_count
+      summary: dataset_follower_count
+      description: |
+        Returun the number of followers of a dataset.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id or name of the dataset
+  organization_follower_count:
+    post:
+      operationId: organization_follower_count
+      summary: organization_follower_count
+      description: |
+        Returun the number of followers of an organization.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id or name of the organization
+  user_follower_list:
+    post:
+      operationId: user_follower_list
+      summary: user_follower_list
+      description: |
+        Return the list of users that are following the given user.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id or name of the user
+  dataset_follower_list:
+    post:
+      operationId: dataset_follower_list
+      summary: dataset_follower_list
+      description: |
+        Return the list of users that are following the given dataset.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id or name of the dataset
+  group_follower_list:
+    post:
+      operationId: group_follower_list
+      summary: group_follower_list
+      description: |
+        Return the list of users that are following the given group.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id or name of the group
+  organization_follower_list:
+    post:
+      operationId: organization_follower_list
+      summary: organization_follower_list
+      description: |
+        Return the list of users that are following the given organization.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id or name of the organization
+  am_following_user:
+    post:
+      operationId: am_following_user
+      summary: am_following_user
+      description: |
+        Return `True` if you're following the given user, `False` if not.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id or name of the user
+  am_following_dataset:
+    post:
+      operationId: am_following_dataset
+      summary: am_following_dataset
+      description: |
+        Return `True` if you're following the given dataset, `False` if not.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id or name of the dataset
+  am_following_group:
+    post:
+      operationId: am_following_group
+      summary: am_following_group
+      description: |
+        Return `True` if you're following the given group, `False` if not.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id or name of the group
+  followee_count:
+    post:
+      operationId: followee_count
+      summary: followee_count
+      description: |
+        Return the number of objects that are followed by the given user.
+
+        Counts all objects, of any type, that the given user is following (e.g. followed users, followed datasets, followed groups).
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id of the user
+  user_followee_count:
+    post:
+      operationId: user_followee_count
+      summary: user_followee_count
+      description: |
+        Return the number of users that are followed by the given user.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id of the user
+  dataset_followee_count:
+    post:
+      operationId: dataset_followee_count
+      summary: dataset_followee_count
+      description: |
+        Return the number of datasets that are followed by the given user.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id of the user
+  group_followee_count:
+    post:
+      operationId: group_followee_count
+      summary: group_followee_count
+      description: |
+        Return the number of groups that are followed by the given user.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id of the user
+  organization_followee_count:
+    post:
+      operationId: organization_followee_count
+      summary: organization_followee_count
+      description: |
+        Return the number of organizations that are followed by the given user.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id of the user
+  followee_list:
+    post:
+      operationId: followee_list
+      summary: followee_list
+      description: |
+        Return the list of objects that are followed by the given user.
+
+        Returns all objects, of any type, that the given user is following (e.g. followed users, followed datasets, followed groups).
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id or name of the user
+                q:
+                  type: string
+                  description: a query string to limit results by, only objects whose display name begins with the given string (case-insensitive) wil be returned
+  organization_followee_list:
+    post:
+      operationId: organization_followee_list
+      summary: organization_followee_list
+      description: |
+        Return the list of organizations that are followed by the given user.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id or name of the user
+  member_roles_list:
+    post:
+      operationId: member_roles_list
+      summary: member_roles_list
+      description: |
+        Return the possible roles for members of groups and organizations.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                group_type:
+                  type: string
+                  description: 'the group type, either `"group"` or `"organization"` (default: `"organization"`)'
+  help_show:
+    post:
+      operationId: help_show
+      summary: help_show
+      description: |
+        Return the help string for a particular API action.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Action function name (e.g. `user_create`, `package_search`)
+  config_option_show:
+    post:
+      operationId: config_option_show
+      summary: config_option_show
+      description: |
+        Show the current value of a particular configuration option.
+
+        Only returns runtime-editable config options (the ones returned by `config_option_list()`), which can be updated with the `config_option_update()` action.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                key:
+                  type: string
+                  description: The configuration option key
+  config_option_list:
+    post:
+      operationId: config_option_list
+      summary: config_option_list
+      description: |
+        Return a list of runtime-editable config option keys that can be updated with `config_option_update()`.
+  job_list:
+    post:
+      operationId: job_list
+      summary: job_list
+      description: |
+        List enqueued background jobs.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                queues:
+                  type: array
+                  items:
+                    type: string
+                  description: Queues to list jobs from. If not given then the jobs from all queues are listed.
+  job_show:
+    post:
+      operationId: job_show
+      summary: job_show
+      description: |
+        Show details for a background job.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: The ID of the background job.
+  api_token_list:
+    post:
+      operationId: api_token_list
+      summary: api_token_list
+      description: |
+        Return list of all available API tokens for the current user.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  type: string
+                  description: The user ID or name
+  package_create:
+    post:
+      operationId: package_create
+      summary: package_create
+      description: |
+        Create a new dataset (package).
+
+        You must be authorized to create new datasets. If you specify any groups for the new dataset, you must also be authorized to edit these groups.
+
+        Plugins may change the parameters of this function depending on the value of the type parameter, see the `IDatasetForm` plugin interface.
+      requestBody:
+        required: false
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: the name of the new dataset, must be between 2 and 100 characters long and contain only lowercase alphanumeric characters, `-` and `_`
+                title:
+                  type: string
+                  description: "the title of the dataset (default: same as `name`)"
+                private:
+                  type: boolean
+                  description: "if `True` creates a private dataset"
+                author:
+                  type: string
+                  description: the name of the dataset's author
+                author_email:
+                  type: string
+                  description: the email address of the dataset's author
+                maintainer:
+                  type: string
+                  description: the name of the dataset's maintainer
+                maintainer_email:
+                  type: string
+                  description: the email address of the dataset's maintainer
+                license_id:
+                  type: string
+                  description: the id of the dataset's license, see `license_list()` for available values
+                notes:
+                  type: string
+                  description: a description of the dataset
+                url:
+                  type: string
+                  description: a URL for the dataset's source
+                version:
+                  type: string
+                  description: no longer than 100 characters
+                state:
+                  type: string
+                  description: "the current state of the dataset, e.g. `'active'` or `'deleted'`, only active datasets show up in search results and other lists of datasets, thsi parameter will be ignored if you are not authorized to change the state of the dataset (default: `'active`')"
+                type:
+                  type: string
+                  description: the type of the dataset, `IDatasetForm` plugins associate themselves with different dataset types and provide custom dataset handling behaviour for these types
+                resources:
+                  type: array
+                  description: the dataset's resources
+                  items:
+                    type: object
+                    properties:
+                      package_id:
+                        type: string
+                        description: id of package that the resource should be added to
+                      url:
+                        type: string
+                        description: url of resource
+                      description:
+                        type: string
+                      format:
+                        type: string
+                      hash:
+                        type: string
+                      name:
+                        type: string
+                      resource_type:
+                        type: string
+                      mimetype:
+                        type: string
+                      mimetype_inner:
+                        type: string
+                      cache_url:
+                        type: string
+                      size:
+                        type: integer
+                      created:
+                        type: string
+                      last_modified:
+                        type: string
+                      cache_last_updated:
+                        type: string
+                      upload:
+                        type: string
+                        format: binary
+                tags:
+                  type: array
+                  description: the dataset's tags
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        description: "the name for the new tag, a string between 2 and 100 characters long containing only alphanumeric characters, spaces and the characters `-`, `_` and `.`, e.g. `'Jazz'`"
+                      vocabulary_id:
+                        type: string
+                        description: "the id of the vocabulary that the new tag should be added to, e.g. the id of vocabulary `'Genre'`"
+                extras:
+                  type: array
+                  description: "the dataset's extras, extras are arbitrary (key: value) metadata items that can be added to datasets, each extra dictionary should have keys `'key'` (a string), `'value'` (a string)"
+                  items:
+                    type: object
+                    additionalProperties: true
+                plugin_data:
+                  type: object
+                  description: |
+                    Private package data belonging to plugins. Only sysadmin users may set this value. It should be a dict that can be dumped into JSON, and plugins should namespace their data with the plugin name to avoid collisions with other plugins, e.g.:
+
+                    ```json
+                    {
+                        "name": "test-dataset",
+                        "plugin_data": {
+                            "plugin1": {"key1": "value1"},
+                            "plugin2": {"key2": "value2"}
+                        }
+                    }
+                    ```
+                  additionalProperties: true
+                relationships_as_object:
+                  type: array
+                  description: list of relationship dictionaries
+                  items:
+                    type: object
+                    properties:
+                      subject:
+                        type: string
+                        description: the id or name of the dataset that is the subject of the relationship
+                      object:
+                        type: string
+                        description: the id or name of the dataset that is the object of the relationship
+                      type:
+                        type: string
+                        description: "the type of the relationship, one of `'depends_on'`, `'dependency_of'`, `'derives_from'`, `'has_derivation'`, `'links_to'`, `'linked_from'`, `'child_of'` or `'parent_of'`"
+                      comment:
+                        type: string
+                        description: a comment about the relationship
+                relationships_as_subject:
+                  type: array
+                  description: list of relationship dictionaries
+                  items:
+                    type: object
+                    properties:
+                      subject:
+                        type: string
+                        description: the id or name of the dataset that is the subject of the relationship
+                      object:
+                        type: string
+                        description: the id or name of the dataset that is the object of the relationship
+                      type:
+                        type: string
+                        description: "the type of the relationship, one of `'depends_on'`, `'dependency_of'`, `'derives_from'`, `'has_derivation'`, `'links_to'`, `'linked_from'`, `'child_of'` or `'parent_of'`"
+                      comment:
+                        type: string
+                        description: a comment about the relationship
+                groups:
+                  type: array
+                  description: "the groups to which the dataset belongs, each group dictionary should have one or more of the following keys which identify an existing group: `'id'` (the id of the group, string), or `'name'` (the name of the group, string), to see which groups exist call `group_list()`"
+                  items:
+                    type: object
+                    additionalProperties: true
+                owner_org:
+                  type: string
+                  description: "the id of the dataset's owning organization, see `organization_list()` or `organization_list_for_user()` for available values. This parameter can be made optional if the config option [`ckan.auth.create_unowned_dataset`](https://docs.ckan.org/en/2.11/maintaining/configuration.html#ckan-auth-create-unowned-dataset) is set to `True`."
+  resource_create:
+    post:
+      operationId: resource_create
+      summary: resource_create
+      description: |
+        Appends a new resource to a datasets list of resources.
+      requestBody:
+        required: false
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                package_id:
+                  type: string
+                  description: id of package that the resource should be added to
+                url:
+                  type: string
+                  description: url of resource
+                description:
+                  type: string
+                format:
+                  type: string
+                hash:
+                  type: string
+                name:
+                  type: string
+                resource_type:
+                  type: string
+                mimetype:
+                  type: string
+                mimetype_inner:
+                  type: string
+                cache_url:
+                  type: string
+                size:
+                  type: integer
+                created:
+                  type: string
+                last_modified:
+                  type: string
+                cache_last_updated:
+                  type: string
+                upload:
+                  type: string
+                  format: binary
+  resource_view_create:
+    post:
+      operationId: resource_view_create
+      summary: resource_view_create
+      description: |
+        Creates a new resource view.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                resource_id:
+                  type: string
+                  description: id of the resource
+                title:
+                  type: string
+                  description: the title of the view
+                description:
+                  type: string
+                  description: a description of the view
+                view_type:
+                  type: string
+                  description: type of view
+                config:
+                  type: string
+                  description: (JSON string) options necessary to recreate a view state
+  resource_create_default_resource_views:
+    post:
+      operationId: resource_create_default_resource_views
+      summary: resource_create_default_resource_views
+      description: |
+        Creates the default views (if necessary) on the provided resource
+
+        The function will get the plugins for the default views defined in the configuration, and if some were found the `can_view` method of each one of them will be called to determine if a resource view should be created. Resource views extensions get the resource dict and the parent dataset dict.
+
+        If the latter is not provided, `package_show` is called to get it.
+
+        By default only view plugins that don't require the resource data to be in the DataStore are called. See `ckan.logic.action.create.package_create_default_resource_views()` for details on the `create_datastore_views` parameter.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                resource:
+                  type: object
+                  description: full resource dict
+                  additionalProperties: true
+                package:
+                  type: object
+                  description: full dataset dict (if not provided, `package_show()` will be called)
+                  additionalProperties: true
+                create_datastore_views:
+                  type: boolean
+                  description: "whether to create views that rely on data being on the DataStore (default: `False`)"
+  package_create_default_resource_views:
+    post:
+      operationId: package_create_default_resource_views
+      summary: package_create_default_resource_views
+      description: |
+        Creates the default views on all resources of the provided dataset
+
+        By default only view plugins that don't require the resource data to be in the DataStore are called. Passing `create_datastore_views` as `True` will only create views that require data to be in the DataStore. The first case happens when the function is called from `package_create` or `package_update`, the second when it's called from the DataPusher when data was uploaded to the DataStore.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                package:
+                  type: object
+                  description: full dataset dict (i.e. the one obtained calling `package_show()`)
+                  additionalProperties: true
+                create_datastore_views:
+                  type: boolean
+                  description: "whether to create views that rely on data being on the DataStore (default: `False`)"
+  package_relationship_create:
+    post:
+      operationId: package_relationship_create
+      summary: package_relationship_create
+      description: |
+        Create a relationship between two datasets (packages).
+
+        You must be authorized to edit both the subject and the object datasets.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                subject:
+                  type: string
+                  description: the id or name of the dataset that is the subject of the relationship
+                object:
+                  type: string
+                  description: the id or name of the dataset that is the object of the relationship
+                type:
+                  type: string
+                  description: the type of the relationship, one of `'depends_on'`, `'dependency_of'`, `'derives_from'`, `'has_derivation', `'links_to'`, `'linked_from'`, `'child_of'`, or `'parent_of'`
+                comment:
+                  type: string
+                  description: a comment about the relationship
+  member_create:
+    post:
+      operationId: member_create
+      summary: member_create
+      description: |
+        Make an object (e.g. a user, dataset or group) a member of a group.
+
+        If the object is already a member of the group then the capacity of the membership will be updated.
+
+        You must be authorized to edit the group.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id or name of the group to add the object to
+                object:
+                  type: string
+                  description: the id or name of the object to add
+                object_type:
+                  type: string
+                  description: the type of the object being added, e.g. `'package'` or `'user'`
+                capacity:
+                  type: string
+                  description: the capacity of the membership
+  package_collaborator_create:
+    post:
+      operationId: package_collaborator_create
+      summary: package_collaborator_create
+      description: |
+        Make a user a collaborator in a dataset.
+
+        If the user is already a collaborator in the dataset then their capacity will be updated.
+
+        Currently you must be an Admin on the dataset owner organization to manage collaborators.
+
+        Note: This action requires the collaborators feature to be enabled with the [`ckan.auth.allow_dataset_collaborators`](https://docs.ckan.org/en/2.11/maintaining/configuration.html#ckan-auth-allow-dataset-collaborators) configuration option.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id or name of the dataset
+                user_id:
+                  type: string
+                  description: the id or name of the user to add or edit
+                capacity:
+                  type: string
+                  description: the capacity or role of the membership. Must be one of "editor" or "member". Additionally if [`ckan.auth.allow_admin_collaborators`](https://docs.ckan.org/en/2.11/maintaining/configuration.html#ckan-auth-allow-admin-collaborators) is set to `True`, "admin" is also allowed.
+  group_create:
+    post:
+      operationId: group_create
+      summary: group_create
+      description: |
+        Create a new group.
+
+        You must be authorized to create groups.
+
+        Plugins may change the parameters of this function depending on the value of the `type` parameter, see the `IGroupForm` plugin interface.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: the name of the group, a string between 2 and 100 characters long, containing only lowercase alphanumeric characters, `-`, and `_`
+                id:
+                  type: string
+                  description: the id of the group
+                title:
+                  type: string
+                  description: the title of the group
+                description:
+                  type: string
+                  description: the description of the group
+                image_url:
+                  type: string
+                  description: the URL to an image to be displayed on the group's page
+                type:
+                  type: string
+                  description: "the type of the group (default: `'group'`), `IGroupForm` plugins associate themselves with different group types and provide custom group handling behavior for these types cannot be 'organization'"
+                state:
+                  type: string
+                  description: "the current state of the group, e.g. `'active'` or `'deleted'`, only active groups show up in search results and other lists of groups, this parameter will be ignored if you are not authorized to change the state of the group (default: `'active'`)"
+                approval_status:
+                  type: string
+                extras:
+                  type: array
+                  description: "the group's extras, extras are arbitrary (key: value) metadata items that can be added to groups, each extra dictionary should have keys `'key'` (a string), `'value'` (a string), and optionally `'deleted'`"
+                  items:
+                    type: object
+                    additionalProperties: true
+                packages:
+                  type: array
+                  description: "the datasets (packages) that belong to the group, a list of dictionaries each with keys `'name'` (string, the id or name of the dataset) and optionally `'title'` (string, the title of the dataset)"
+                  items:
+                    type: object
+                    additionalProperties: true
+                groups:
+                  type: array
+                  description: "the groups that belong to the group, a list of dictionaries each with key `'name'` (string, the id or name of the group) and optionally `'capacity'` (string, the capacity in which the group is a member of the group)"
+                  items:
+                    type: object
+                    additionalProperties: true
+                users:
+                  type: array
+                  description: "the users that belong to the group, a list of dictionaries each with key `'name'` (string, the id or name of the user) and optionally `'capacity'` (string, the capacity in which the user is a member of the group)"
+                  items:
+                    type: object
+                    additionalProperties: true
+  organization_create:
+    post:
+      operationId: organization_create
+      summary: organization_create
+      description: |
+        Create a new organization.
+
+        You must be authorized to create organizations.
+
+        Plugins may change the parameters of this function depending on the value of the `type` parameter, see the `IGroupForm` plugin interface.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: the name of the organization, a string between 2 and 100 characters long, containing only lowercase alphanumeric characters, `-`, and `_`
+                id:
+                  type: string
+                  description: the id of the organization
+                title:
+                  type: string
+                  description: the title of the organization
+                description:
+                  type: string
+                  description: the description of the organization
+                image_url:
+                  type: string
+                  description: the URL to an image to be displayed on the organization's page
+                state:
+                  type: string
+                  description: "the current state of the organization, e.g. `'active'` or `'deleted'`, only active organization show up in search results and other lists of organization, this parameter will be ignored if you are not authorized to change the state of the organization (default: `'active'`)"
+                approval_status:
+                  type: string
+                extras:
+                  type: array
+                  description: "the organization's extras, extras are arbitrary (key: value) metadata items that can be added to organization, each extra dictionary should have keys `'key'` (a string), `'value'` (a string), and optionally `'deleted'`"
+                  items:
+                    type: object
+                    additionalProperties: true
+                packages:
+                  type: array
+                  description: "the datasets (packages) that belong to the organization, a list of dictionaries each with keys `'name'` (string, the id or name of the dataset) and optionally `'title'` (string, the title of the dataset)"
+                  items:
+                    type: object
+                    additionalProperties: true
+                users:
+                  type: array
+                  description: "the users that belong to the organization, a list of dictionaries each with key `'name'` (string, the id or name of the user) and optionally `'capacity'` (string, the capacity in which the user is a member of the organization)"
+                  items:
+                    type: object
+                    additionalProperties: true
+  user_create:
+    post:
+      operationId: user_create
+      summary: user_create
+      description: |
+        Create a new user.
+
+        You must be authorized to create users.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: the name of the new user, a string between 2 and 100 characters long, containing only lowercase alphanumeric characters, `-`, and `_`
+                email:
+                  type: string
+                  description: the email address for the new user
+                password:
+                  type: string
+                  description: the password of the new user, a string of at least 4 characters
+                id:
+                  type: string
+                  description: the id of the new user
+                fullname:
+                  type: string
+                  description: the full name of the new user
+                about:
+                  type: string
+                  description: a description of the new user
+                image_url:
+                  type: string
+                  # Original docs say "group's page" which should be fixed
+                  description: the URL to an image to be displayed on the user's page
+                plugin_extras:
+                  type: object
+                  description: |
+                    private extra user data belonging to plugins. Only sysadmin users may set this value. It should be a dict that can be dumped into JSON, and plugins should namespace their extras with the plugin name to avoid collisions with other plugins, e.g.:
+
+                    ```json
+                    {
+                        "name": "test_user",
+                        "email": "test@example.com",
+                        "plugin_extras": {
+                            "my_plugin": {
+                                "private_extra": 1
+                            },
+                            "another_plugin": {
+                                "another_extra": True
+                            }
+                        }
+                    }
+                    ```
+                  additionalProperties: true
+                with_apitoken:
+                  type: boolean
+                  description: whether to create an API token for the user
+  user_invite:
+    post:
+      operationId: user_invite
+      summary: user_invite
+      description: |
+        Invite a new user.
+
+        You must be authorized to create group members.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: the email of the user to be invited to the group
+                group_id:
+                  type: string
+                  description: the id or name of the group
+                role:
+                  type: string
+                  description: role of the user in the group. One of `member`, `editor`, or `admin`
+  vocabulary_create:
+    post:
+      operationId: vocabulary_create
+      summary: vocabulary_create
+      description: |
+        Create a new tag vocabulary.
+
+        You must a sysadmin to create vocabularies.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: the name of the new vocabulary, e.g. `'Genre'`
+                tags:
+                  type: array
+                  description: the new tags to add to the new vocabulary, for the format of tag dictionaries see `tag_create()`
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        description: "the name for the new tag, a string between 2 and 100 characters long containing only alphanumeric characters, spaces and the characters `-`, `_`, and `.`, e.g. `'Fruits'`"
+                      vocabulary_id:
+                        type: string
+                        description: "the id of the vocabulary that the new tag should be added to, e.g. the id of vocabulary `'Genre'`"
+  tag_create:
+    post:
+      operationId: tag_create
+      summary: tag_create
+      description: |
+        Create a new vocabulary tag.
+
+        You must be a sysadmin to create vocabulary tags.
+
+        You can only use this function to create tags that belong to a vocabulary, not to create free tags. (To create a new free tag simply add the tag to a package, e.g. using the `package_update()` function.)
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: "the name for the new tag, a string between 2 and 100 characters long containing only alphanumeric characters, spaces and the characters `-`, `_`, and `.`, e.g. `'Fruits'`"
+                vocabulary_id:
+                  type: string
+                  description: "the id of the vocabulary that the new tag should be added to, e.g. the id of vocabulary `'Genre'`"
+  follow_user:
+    post:
+      operationId: follow_user
+      summary: follow_user
+      description: |
+        Start following another user.
+
+        You must provide your API key in the Authorization header.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: "the id or name of the user to follow, e.g. `'joeuser'`"
+  follow_dataset:
+    post:
+      operationId: follow_dataset
+      summary: follow_dataset
+      description: |
+        Start following a dataset.
+
+        You must provide your API key in the Authorization header.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: "the id or name of the dataset to follow, e.g. `'inventory'`"
+  group_member_create:
+    post:
+      operationId: group_member_create
+      summary: group_member_create
+      description: |
+        Make a user a member of a group.
+
+        You must be authorized to edit the group.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id or name of the group
+                username:
+                  type: string
+                  description: name or id of the user to be made member of the group
+                role:
+                  type: string
+                  description: "role of the user in the group. One of `member`, `editor`, or `admin`"
+  organization_member_create:
+    post:
+      operationId: organization_member_create
+      summary: organization_member_create
+      description: |
+        Make a user a member of an organization.
+
+        You must be authorized to edit the organization.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id or name of the organization
+                username:
+                  type: string
+                  description: name or id of the user to be made member of the organization
+                role:
+                  type: string
+                  description: "role of the user in the organization. One of `member`, `editor`, or `admin`"
+  follow_group:
+    post:
+      operationId: follow_group
+      summary: follow_group
+      description: |
+        Start following a group.
+
+        You must provide your API key in the Authorization header.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: "the id or name of the group to follow, e.g. `'roger'`"
+  api_token_create:
+    post:
+      operationId: api_token_create
+      summary: api_token_create
+      description: |
+        Create new API Token for current user.
+
+        Apart from the `user` and `name` field that are required by default implementation, there may be additional fields registered by extensions.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user:
+                  type: string
+                  description: name or id of the user who owns new API Token
+                name:
+                  type: string
+                  description: distinctive name for API Token
+  resource_update:
+    put:
+      operationId: resource_update
+      summary: resource_update
+      description: |
+        Update a resource.
+
+        To update a resource you must be authorized to update the dataset that the resource belongs to.
+
+        <Callout title="Note">Update methods may delete parameters not explicitly provided in the data_dict. If you want to edit only a specific attribute use `resource_patch` instead.</Callout>
+      requestBody:
+        required: false
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id of the resource to update
+                package_id:
+                  type: string
+                  description: id of package that the resource should be added to
+                url:
+                  type: string
+                  description: url of resource
+                description:
+                  type: string
+                format:
+                  type: string
+                hash:
+                  type: string
+                name:
+                  type: string
+                resource_type:
+                  type: string
+                mimetype:
+                  type: string
+                mimetype_inner:
+                  type: string
+                cache_url:
+                  type: string
+                size:
+                  type: integer
+                created:
+                  type: string
+                last_modified:
+                  type: string
+                cache_last_updated:
+                  type: string
+                upload:
+                  type: string
+                  format: binary
+  resource_view_update:
+    put:
+      operationId: resource_view_update
+      summary: resource_view_update
+      description: |
+        Update a resource view.
+
+        To update a resource_view you must be authorized to update the resource that the resource_view belongs to.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id of the resource_view to update
+                resource_id:
+                  type: string
+                  description: id of the resource
+                title:
+                  type: string
+                  description: the title of the view
+                description:
+                  type: string
+                  description: a description of the view
+                view_type:
+                  type: string
+                  description: type of view
+                config:
+                  type: string
+                  description: (JSON string) options necessary to recreate a view state
+  resource_view_reorder:
+    put:
+      operationId: resource_view_reorder
+      summary: resource_view_reorder
+      description: |
+        Reorder resource views.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id of the resource
+                order:
+                  type: array
+                  description: the list of id of the resource to update the order of the views
+                  items:
+                    type: string
+  package_update:
+    put:
+      operationId: package_update
+      summary: package_update
+      description: |
+        Update a dataset (package).
+
+        You must be authorized to edit the dataset and the groups that it belongs to.
+
+        <Callout title="Note">Update methods may delete parameters not explicitly provided in the data_dict. If you want to edit only a specific attribute use `package_patch` instead.</Callout>
+
+        It is recommended to call `ckan.logic.action.get.package_show()`, make the desired changes to the result, and then call `package_update()` with it.
+
+        Plugins may change the parameters of this function depending on the value of the dataset's `type` attribute, see the `IDatasetForm` plugin interface.
+      requestBody:
+        required: false
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the name or id of the dataset to update
+                name:
+                  type: string
+                  description: the name of the new dataset, must be between 2 and 100 characters long and contain only lowercase alphanumeric characters, `-` and `_`
+                title:
+                  type: string
+                  description: "the title of the dataset (default: same as `name`)"
+                private:
+                  type: boolean
+                  description: "if `True` creates a private dataset"
+                author:
+                  type: string
+                  description: the name of the dataset's author
+                author_email:
+                  type: string
+                  description: the email address of the dataset's author
+                maintainer:
+                  type: string
+                  description: the name of the dataset's maintainer
+                maintainer_email:
+                  type: string
+                  description: the email address of the dataset's maintainer
+                license_id:
+                  type: string
+                  description: the id of the dataset's license, see `license_list()` for available values
+                notes:
+                  type: string
+                  description: a description of the dataset
+                url:
+                  type: string
+                  description: a URL for the dataset's source
+                version:
+                  type: string
+                  description: no longer than 100 characters
+                state:
+                  type: string
+                  description: "the current state of the dataset, e.g. `'active'` or `'deleted'`, only active datasets show up in search results and other lists of datasets, thsi parameter will be ignored if you are not authorized to change the state of the dataset (default: `'active`')"
+                type:
+                  type: string
+                  description: the type of the dataset, `IDatasetForm` plugins associate themselves with different dataset types and provide custom dataset handling behaviour for these types
+                resources:
+                  type: array
+                  description: the dataset's resources
+                  items:
+                    type: object
+                    properties:
+                      package_id:
+                        type: string
+                        description: id of package that the resource should be added to
+                      url:
+                        type: string
+                        description: url of resource
+                      description:
+                        type: string
+                      format:
+                        type: string
+                      hash:
+                        type: string
+                      name:
+                        type: string
+                      resource_type:
+                        type: string
+                      mimetype:
+                        type: string
+                      mimetype_inner:
+                        type: string
+                      cache_url:
+                        type: string
+                      size:
+                        type: integer
+                      created:
+                        type: string
+                      last_modified:
+                        type: string
+                      cache_last_updated:
+                        type: string
+                      upload:
+                        type: string
+                        format: binary
+                tags:
+                  type: array
+                  description: the dataset's tags
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        description: "the name for the new tag, a string between 2 and 100 characters long containing only alphanumeric characters, spaces and the characters `-`, `_` and `.`, e.g. `'Jazz'`"
+                      vocabulary_id:
+                        type: string
+                        description: "the id of the vocabulary that the new tag should be added to, e.g. the id of vocabulary `'Genre'`"
+                extras:
+                  type: array
+                  description: "the dataset's extras, extras are arbitrary (key: value) metadata items that can be added to datasets, each extra dictionary should have keys `'key'` (a string), `'value'` (a string)"
+                  items:
+                    type: object
+                    additionalProperties: true
+                plugin_data:
+                  type: object
+                  description: |
+                    Private package data belonging to plugins. Only sysadmin users may set this value. It should be a dict that can be dumped into JSON, and plugins should namespace their data with the plugin name to avoid collisions with other plugins, e.g.:
+
+                    ```json
+                    {
+                        "name": "test-dataset",
+                        "plugin_data": {
+                            "plugin1": {"key1": "value1"},
+                            "plugin2": {"key2": "value2"}
+                        }
+                    }
+                    ```
+                  additionalProperties: true
+                relationships_as_object:
+                  type: array
+                  description: list of relationship dictionaries
+                  items:
+                    type: object
+                    properties:
+                      subject:
+                        type: string
+                        description: the id or name of the dataset that is the subject of the relationship
+                      object:
+                        type: string
+                        description: the id or name of the dataset that is the object of the relationship
+                      type:
+                        type: string
+                        description: "the type of the relationship, one of `'depends_on'`, `'dependency_of'`, `'derives_from'`, `'has_derivation'`, `'links_to'`, `'linked_from'`, `'child_of'` or `'parent_of'`"
+                      comment:
+                        type: string
+                        description: a comment about the relationship
+                relationships_as_subject:
+                  type: array
+                  description: list of relationship dictionaries
+                  items:
+                    type: object
+                    properties:
+                      subject:
+                        type: string
+                        description: the id or name of the dataset that is the subject of the relationship
+                      object:
+                        type: string
+                        description: the id or name of the dataset that is the object of the relationship
+                      type:
+                        type: string
+                        description: "the type of the relationship, one of `'depends_on'`, `'dependency_of'`, `'derives_from'`, `'has_derivation'`, `'links_to'`, `'linked_from'`, `'child_of'` or `'parent_of'`"
+                      comment:
+                        type: string
+                        description: a comment about the relationship
+                groups:
+                  type: array
+                  description: "the groups to which the dataset belongs, each group dictionary should have one or more of the following keys which identify an existing group: `'id'` (the id of the group, string), or `'name'` (the name of the group, string), to see which groups exist call `group_list()`"
+                  items:
+                    type: object
+                    additionalProperties: true
+                owner_org:
+                  type: string
+                  description: "the id of the dataset's owning organization, see `organization_list()` or `organization_list_for_user()` for available values. This parameter can be made optional if the config option [`ckan.auth.create_unowned_dataset`](https://docs.ckan.org/en/2.11/maintaining/configuration.html#ckan-auth-create-unowned-dataset) is set to `True`."
+  package_revise:
+    put:
+      operationId: package_revise
+      summary: package_revise
+      description: |
+        Revise a dataset (package) selectively with match, filter, and update parameters.
+
+        You must be authorized to edit the dataset and the groups that it belongs to.
+
+        `match` and `update` parameters may also be passed as "flattened keys", using either the item numeric index or its unique id (with a minimum of 5 characters), e.g. `update__resource__1f9ab__description="guidebook"` would set the description of the resource with id starting with "1f9ab" to "guidebook", and `update__resource__-1__description="guidebook"` would do the same on the last resource in the dataset.
+
+        The `extend` suffix can also be used on the update parameter to add a new item to a list, e.g. `update__resources__extend=[{"name": "new resource", "url": "https://example.com"}]` will add a new resource to the dataset with the provided `name` and `url`.
+
+        Usage examples:
+
+        - Change description in dataset, checking for old description:
+
+        ```
+        match={"notes": "old notes", "name": "xyz"}
+        update={"notes": "new notes"}
+        ```
+
+        - Identical to above, but using flattened keys:
+
+        ```
+        match__name="xyz"
+        match__notes="old notes"
+        update__notes="new notes"
+        ```
+
+        - Replace all fields at dataset level only, keep resources (note: dataset id and type fields can’t be deleted)
+
+        ```
+        match={"id": "1234abc-1420-cbad-1922"}
+        filter=["+resources", "-*"]
+        update={"name": "fresh-start", "title": "Fresh Start"}
+        ```
+
+        - Add a new resource (__extend on flattened key):
+
+        ```
+        match={"id": "abc0123-1420-cbad-1922"}
+        update__resources__extend=[{"name": "new resource", "url": "http://example.com"}]
+        ```
+
+        - Update a resource by its index:
+
+        ```
+        match={"name": "my-data"}
+        update__resources__0={"name": "new name, first resource"}
+        ```
+
+        - Update a resource by its id (provide at least 5 characters):
+
+        ```
+        match={"name": "their-data"}
+        update__resources__19cfad={"description": "right one for sure"}
+        ```
+
+        - Replace all fields of a resource:
+
+        ```
+        match={"id": "34a12bc-1420-cbad-1922"}
+        filter=["+resources__1492a__id", "-resources__1492a__*"]
+        update__resources__1492a={"name": "edits here", "url": "http://example.com"}
+        ```
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                match:
+                  type: object
+                  description: 'a dict containing "id" or "name" values of the dataset to update, all values provided must match the current dataset values or a `ValidationError` will be raised. e.g. `{"name": "my-data", "resources": {["name": "big.csv"]}}` would abort if the `my-data` dataset''s first resource name is not "big.csv".'
+                  additionalProperties: true
+                filter:
+                  type: array
+                  description: 'a list of string patterns of fields to remove from the current dataset. e.g. `"-resources__1"` would remove the second resource, `"+title, +resources, -*"` would remove all fields at the dataset level except title and all resources (default: `[]`)'
+                  items:
+                    type: string
+                update:
+                  type: object
+                  description: 'a dict with values to update/create after filtering e.g. `{"resources": [{"description": "file here"}]}` would update the description for the first resource'
+                  additionalProperties: true
+                include:
+                  type: array
+                  description: 'a list of string pattern of fields to include in response e.g. `"-*"` to return nothing (default: `[]` all fields returned)'
+                  items:
+                    type: string
+  package_resource_reorder:
+    put:
+      operationId: package_resource_reorder
+      summary: package_resource_reorder
+      description: |
+        Reorder resources against datasets. If only partial resource ids are supplied then these are assumed to be first and the other resources will stay in their original order.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id or name of the package to update
+                order:
+                  type: array
+                  description: a list of resource ids in the order needed
+                  items:
+                    type: string
+  package_relationship_update:
+    put:
+      operationId: package_relationship_update
+      summary: package_relationship_update
+      description: |
+        Update a relationship between two datasets (packages).
+
+        The subject, object and type parameters are required to identify the relationship. Only the comment can be updated.
+
+        You must be authorized to edit both the subject and the object datasets.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                subject:
+                  type: string
+                  description: the name or id of teh dataset that is the subject of the relationship
+                object:
+                  type: string
+                  description: the name or id of the dataset that is the object of the relationship
+                type:
+                  type: string
+                  description: the type of the relationship, one of `'depends_on'`, `'dependency_of'`, `'derives_from'`, `'has_derivation'`, `'links_to'`, `'linked_from'`, `'child_of'`, or `'parent_of'`
+                comment:
+                  type: string
+                  description: a comment about the relationship
+  group_update:
+    put:
+      operationId: group_update
+      summary: group_update
+      description: |
+        Update a group.
+
+        You must be authorized to edit the group.
+
+        <Callout title="Note">Update methods may delete parameters not explicitly provided in the data_dict. If you want to edit only a specific attribute use `group_patch` instead.</Callout>
+
+        Plugins may change the parameters of this function depending on the value of the group's `type` attribute, see the `IGroupForm` plugin interface.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the name or id of the group to update
+                name:
+                  type: string
+                  description: the name of the group, a string between 2 and 100 characters long, containing only lowercase alphanumeric characters, `-`, and `_`
+                title:
+                  type: string
+                  description: the title of the group
+                description:
+                  type: string
+                  description: the description of the group
+                image_url:
+                  type: string
+                  description: the URL to an image to be displayed on the group's page
+                type:
+                  type: string
+                  description: "the type of the group (default: `'group'`), `IGroupForm` plugins associate themselves with different group types and provide custom group handling behavior for these types cannot be 'organization'"
+                state:
+                  type: string
+                  description: "the current state of the group, e.g. `'active'` or `'deleted'`, only active groups show up in search results and other lists of groups, this parameter will be ignored if you are not authorized to change the state of the group (default: `'active'`)"
+                approval_status:
+                  type: string
+                extras:
+                  type: array
+                  description: "the group's extras, extras are arbitrary (key: value) metadata items that can be added to groups, each extra dictionary should have keys `'key'` (a string), `'value'` (a string), and optionally `'deleted'`"
+                  items:
+                    type: object
+                    additionalProperties: true
+                packages:
+                  type: array
+                  description: "the datasets (packages) that belong to the group, a list of dictionaries each with keys `'name'` (string, the id or name of the dataset) and optionally `'title'` (string, the title of the dataset)"
+                  items:
+                    type: object
+                    additionalProperties: true
+                groups:
+                  type: array
+                  description: "the groups that belong to the group, a list of dictionaries each with key `'name'` (string, the id or name of the group) and optionally `'capacity'` (string, the capacity in which the group is a member of the group)"
+                  items:
+                    type: object
+                    additionalProperties: true
+                users:
+                  type: array
+                  description: "the users that belong to the group, a list of dictionaries each with key `'name'` (string, the id or name of the user) and optionally `'capacity'` (string, the capacity in which the user is a member of the group)"
+                  items:
+                    type: object
+                    additionalProperties: true
+  organization_update:
+    put:
+      operationId: organization_update
+      summary: organization_update
+      # Original docs say "a organization" when it should be "an organization"
+      description: |
+        Update an organization.
+
+        You must be authorized to edit the organization.
+
+        <Callout title="Note">Update methods may delete parameters not explicitly provided in the data_dict. If you want to edit only a specific attribute use `organization_patch` instead.</Callout>
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the name or id of the organization to update
+                name:
+                  type: string
+                  description: the name of the organization, a string between 2 and 100 characters long, containing only lowercase alphanumeric characters, `-`, and `_`
+                title:
+                  type: string
+                  description: the title of the organization
+                description:
+                  type: string
+                  description: the description of the organization
+                image_url:
+                  type: string
+                  description: the URL to an image to be displayed on the organization's page
+                state:
+                  type: string
+                  description: "the current state of the organization, e.g. `'active'` or `'deleted'`, only active organization show up in search results and other lists of organization, this parameter will be ignored if you are not authorized to change the state of the organization (default: `'active'`)"
+                approval_status:
+                  type: string
+                extras:
+                  type: array
+                  description: "the organization's extras, extras are arbitrary (key: value) metadata items that can be added to organization, each extra dictionary should have keys `'key'` (a string), `'value'` (a string), and optionally `'deleted'`"
+                  items:
+                    type: object
+                    additionalProperties: true
+                packages:
+                  type: array
+                  description: "ignored. use `package_owner_org_update()` to change package ownership"
+                  items:
+                    type: object
+                    additionalProperties: true
+                users:
+                  type: array
+                  description: "the users that belong to the organization, a list of dictionaries each with key `'name'` (string, the id or name of the user) and optionally `'capacity'` (string, the capacity in which the user is a member of the organization)"
+                  items:
+                    type: object
+                    additionalProperties: true
+  user_update:
+    post:
+      operationId: user_update
+      summary: user_update
+      description: |
+        Update a user account.
+
+        Normal users can only update their own user accounts. Sysadmins can update any user account and modify existing usernames.
+
+        <Callout title="Note">Update methods may delete parameters not explicitly provided in the data_dict. If you want to edit only a specific attribute use `user_patch` instead.</Callout>
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the name or id of the user to update
+                name:
+                  type: string
+                  description: the name of the new user, a string between 2 and 100 characters long, containing only lowercase alphanumeric characters, `-`, and `_`
+                email:
+                  type: string
+                  description: the email address for the new user
+                password:
+                  type: string
+                  description: the password of the new user, a string of at least 4 characters
+                fullname:
+                  type: string
+                  description: the full name of the new user
+                about:
+                  type: string
+                  description: a description of the new user
+                image_url:
+                  type: string
+                  # Original docs say "group's page" which should be fixed
+                  description: the URL to an image to be displayed on the user's page
+                plugin_extras:
+                  type: object
+                  description: |
+                    private extra user data belonging to plugins. Only sysadmin users may set this value. It should be a dict that can be dumped into JSON, and plugins should namespace their extras with the plugin name to avoid collisions with other plugins, e.g.:
+
+                    ```json
+                    {
+                        "name": "test_user",
+                        "email": "test@example.com",
+                        "plugin_extras": {
+                            "my_plugin": {
+                                "private_extra": 1
+                            },
+                            "another_plugin": {
+                                "another_extra": True
+                            }
+                        }
+                    }
+                    ```
+                  additionalProperties: true
+                with_apitoken:
+                  type: boolean
+                  description: whether to create an API token for the user
+  task_status_update:
+    put:
+      operationId: task_status_update
+      summary: task_status_update
+      description: |
+        Update a task status.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id of the task status to update
+                entity_id:
+                  type: string
+                entity_type:
+                  type: string
+                task_type:
+                  type: string
+                key:
+                  type: string
+                value:
+                  type: string
+                state:
+                  type: string
+                last_updated:
+                  type: string
+                # Not sure about the type for this
+                error:
+                  type: string
+  task_status_update_many:
+    put:
+      operationId: task_status_update_many
+      summary: task_status_update_many
+      description: |
+        Update many task statuses at once.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  description: the task_status dictionaries to update
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        description: the id of the task status to update
+                      entity_id:
+                        type: string
+                      entity_type:
+                        type: string
+                      task_type:
+                        type: string
+                      key:
+                        type: string
+                      value:
+                        type: string
+                      state:
+                        type: string
+                      last_updated:
+                        type: string
+                      error:
+                        type: string
+  term_translation_update:
+    put:
+      operationId: term_translation_update
+      summary: term_translation_update
+      description: |
+        Create or update a term translation.
+
+        You must be a sysadmin to create or update term translations.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                term:
+                  type: string
+                  description: the term to be translated, in the original language, e.g. `'fruit'`
+                term_translation:
+                  type: string
+                  description: the translation of the term, e.g. `'obst'`
+                lang_code:
+                  type: string
+                  description: the language code of the translation, e.g. `'de'`
+  term_translation_update_many:
+    put:
+      operationId: term_translation_update_many
+      summary: term_translation_update_many
+      description: |
+        Create or update many term translations at once.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  description: the term translation dictionaries to create or update
+                  items:
+                    type: object
+                    properties:
+                      term:
+                        type: string
+                        description: the term to be translated, in the original language, e.g. `'fruit'`
+                      term_translation:
+                        type: string
+                        description: the translation of the term, e.g. `'obst'`
+                      lang_code:
+                        type: string
+                        description: the language code of the translation, e.g. `'de'`
+  vocabulary_update:
+    put:
+      operationId: vocabulary_update
+      summary: vocabulary_update
+      description: |
+        Update a tag vocabulary.
+
+        You must a sysadmin to update vocabularies.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id of the vocabulary to update
+                name:
+                  type: string
+                  description: the name of the new vocabulary, e.g. `'Genre'`
+                tags:
+                  type: array
+                  description: the new tags to add to the new vocabulary, for the format of tag dictionaries see `tag_create()`
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        description: "the name for the new tag, a string between 2 and 100 characters long containing only alphanumeric characters, spaces and the characters `-`, `_`, and `.`, e.g. `'Fruits'`"
+                      vocabulary_id:
+                        type: string
+                        description: "the id of the vocabulary that the new tag should be added to, e.g. the id of vocabulary `'Genre'`"
+  package_owner_org_update:
+    put:
+      operationId: package_owner_org_update
+      summary: package_owner_org_update
+      description: |
+        Update the owning organization of a dataset.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the name or id of the dataset to update
+                organization_id:
+                  type: string
+                  description: the name or id of the owning organization
+  bulk_update_private:
+    put:
+      operationId: bulk_update_private
+      summary: bulk_update_private
+      description: |
+        Make a list of datasets private.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                datasets:
+                  type: array
+                  description: list of ids of the datasets to update
+                  items:
+                    type: string
+                org_id:
+                  type: string
+                  description: id of the owning organization
+  bulk_update_public:
+    put:
+      operationId: bulk_update_public
+      summary: bulk_update_public
+      description: |
+        Make a list of datasets public.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                datasets:
+                  type: array
+                  description: list of ids of the datasets to update
+                  items:
+                    type: string
+                org_id:
+                  type: string
+                  description: id of the owning organization
+  bulk_update_delete:
+    put:
+      operationId: bulk_update_delete
+      summary: bulk_update_delete
+      description: |
+        Make a list of datasets deleted.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                datasets:
+                  type: array
+                  description: list of ids of the datasets to update
+                  items:
+                    type: string
+                org_id:
+                  type: string
+                  description: id of the owning organization
+  config_option_update:
+    put:
+      operationId: config_option_update
+      summary: config_option_update
+      description: |
+        Added in version 2.4.
+
+        Allows to modify some CKAN runtime-editable config options
+
+        It takes arbitrary key, value pairs and checks the keys against the config options update schema. If some of the provided keys are not present in the schema a `ValidationError` is raised. The values are then validated against the schema, and if validation is passed, for each key, value config option:
+
+        - It is stored on the `system_info` database table
+        - The Pylons `config` object is updated.
+        - The `app_globals` (`g`) object is updated (this only happens for options explicitly defined in the `app_globals` module.
+
+        <Callout title="Note">You can see all available runtime-editable configuration options calling the `config_option_list()` action.</Callout>
+
+        <Callout title="Note">Extensions can modify which configuration options are runtime-editable. For details, check [Making configuration options runtime-editable](https://docs.ckan.org/en/2.11/extensions/remote-config-update.html).</Callout>
+
+        <Callout title="Warning" type="warn">You should only add config options that you are comfortable they can be edited during runtime, such as ones you've added in your own extension, or have reviewed the use of in core CKAN.</Callout>
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                key:
+                  type: string
+                  description: a configuration option key (e.g. `ckan.site_title`). It must be present on the `update_configuration_schema`
+  package_patch:
+    patch:
+      operationId: package_patch
+      summary: package_patch
+      description: |
+        Patch a dataset (package).
+
+        The difference between the update and patch methods is that the patch will perform an update of the provided parameters, while leaving all other parameters unchanged, whereas the update methods deletes all parameters not explicitly provided in the data_dict.
+
+        To partially update resources or other metadata not at the top level of a package use `package_revise()` instead to maintain existing nested values.
+
+        You must be authorized to edit the dataset and the groups that it belongs to.
+      requestBody:
+        required: false
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the name or id of the dataset
+                name:
+                  type: string
+                  description: the name of the new dataset, must be between 2 and 100 characters long and contain only lowercase alphanumeric characters, `-` and `_`
+                title:
+                  type: string
+                  description: "the title of the dataset (default: same as `name`)"
+                private:
+                  type: boolean
+                  description: "if `True` creates a private dataset"
+                author:
+                  type: string
+                  description: the name of the dataset's author
+                author_email:
+                  type: string
+                  description: the email address of the dataset's author
+                maintainer:
+                  type: string
+                  description: the name of the dataset's maintainer
+                maintainer_email:
+                  type: string
+                  description: the email address of the dataset's maintainer
+                license_id:
+                  type: string
+                  description: the id of the dataset's license, see `license_list()` for available values
+                notes:
+                  type: string
+                  description: a description of the dataset
+                url:
+                  type: string
+                  description: a URL for the dataset's source
+                version:
+                  type: string
+                  description: no longer than 100 characters
+                state:
+                  type: string
+                  description: "the current state of the dataset, e.g. `'active'` or `'deleted'`, only active datasets show up in search results and other lists of datasets, thsi parameter will be ignored if you are not authorized to change the state of the dataset (default: `'active`')"
+                type:
+                  type: string
+                  description: the type of the dataset, `IDatasetForm` plugins associate themselves with different dataset types and provide custom dataset handling behaviour for these types
+                resources:
+                  type: array
+                  description: the dataset's resources
+                  items:
+                    type: object
+                    properties:
+                      package_id:
+                        type: string
+                        description: id of package that the resource should be added to
+                      url:
+                        type: string
+                        description: url of resource
+                      description:
+                        type: string
+                      format:
+                        type: string
+                      hash:
+                        type: string
+                      name:
+                        type: string
+                      resource_type:
+                        type: string
+                      mimetype:
+                        type: string
+                      mimetype_inner:
+                        type: string
+                      cache_url:
+                        type: string
+                      size:
+                        type: integer
+                      created:
+                        type: string
+                      last_modified:
+                        type: string
+                      cache_last_updated:
+                        type: string
+                      upload:
+                        type: string
+                        format: binary
+                tags:
+                  type: array
+                  description: the dataset's tags
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        description: "the name for the new tag, a string between 2 and 100 characters long containing only alphanumeric characters, spaces and the characters `-`, `_` and `.`, e.g. `'Jazz'`"
+                      vocabulary_id:
+                        type: string
+                        description: "the id of the vocabulary that the new tag should be added to, e.g. the id of vocabulary `'Genre'`"
+                extras:
+                  type: array
+                  description: "the dataset's extras, extras are arbitrary (key: value) metadata items that can be added to datasets, each extra dictionary should have keys `'key'` (a string), `'value'` (a string)"
+                  items:
+                    type: object
+                    additionalProperties: true
+                plugin_data:
+                  type: object
+                  description: |
+                    Private package data belonging to plugins. Only sysadmin users may set this value. It should be a dict that can be dumped into JSON, and plugins should namespace their data with the plugin name to avoid collisions with other plugins, e.g.:
+
+                    ```json
+                    {
+                        "name": "test-dataset",
+                        "plugin_data": {
+                            "plugin1": {"key1": "value1"},
+                            "plugin2": {"key2": "value2"}
+                        }
+                    }
+                    ```
+                  additionalProperties: true
+                relationships_as_object:
+                  type: array
+                  description: list of relationship dictionaries
+                  items:
+                    type: object
+                    properties:
+                      subject:
+                        type: string
+                        description: the id or name of the dataset that is the subject of the relationship
+                      object:
+                        type: string
+                        description: the id or name of the dataset that is the object of the relationship
+                      type:
+                        type: string
+                        description: "the type of the relationship, one of `'depends_on'`, `'dependency_of'`, `'derives_from'`, `'has_derivation'`, `'links_to'`, `'linked_from'`, `'child_of'` or `'parent_of'`"
+                      comment:
+                        type: string
+                        description: a comment about the relationship
+                relationships_as_subject:
+                  type: array
+                  description: list of relationship dictionaries
+                  items:
+                    type: object
+                    properties:
+                      subject:
+                        type: string
+                        description: the id or name of the dataset that is the subject of the relationship
+                      object:
+                        type: string
+                        description: the id or name of the dataset that is the object of the relationship
+                      type:
+                        type: string
+                        description: "the type of the relationship, one of `'depends_on'`, `'dependency_of'`, `'derives_from'`, `'has_derivation'`, `'links_to'`, `'linked_from'`, `'child_of'` or `'parent_of'`"
+                      comment:
+                        type: string
+                        description: a comment about the relationship
+                groups:
+                  type: array
+                  description: "the groups to which the dataset belongs, each group dictionary should have one or more of the following keys which identify an existing group: `'id'` (the id of the group, string), or `'name'` (the name of the group, string), to see which groups exist call `group_list()`"
+                  items:
+                    type: object
+                    additionalProperties: true
+                owner_org:
+                  type: string
+                  description: "the id of the dataset's owning organization, see `organization_list()` or `organization_list_for_user()` for available values. This parameter can be made optional if the config option [`ckan.auth.create_unowned_dataset`](https://docs.ckan.org/en/2.11/maintaining/configuration.html#ckan-auth-create-unowned-dataset) is set to `True`."
+  resource_patch:
+    patch:
+      operationId: resource_patch
+      summary: resource_patch
+      description: |
+        Patch a resource.
+
+        The difference between the update and patch methods is that the patch will perform an update of the provided parameters, while leaving all other parameters unchanged, whereas the update methods deletes all parameters not explicitly provided in the data_dict.
+      requestBody:
+        required: false
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id of the resource
+                package_id:
+                  type: string
+                  description: id of package that the resource should be added to
+                url:
+                  type: string
+                  description: url of resource
+                description:
+                  type: string
+                format:
+                  type: string
+                hash:
+                  type: string
+                name:
+                  type: string
+                resource_type:
+                  type: string
+                mimetype:
+                  type: string
+                mimetype_inner:
+                  type: string
+                cache_url:
+                  type: string
+                size:
+                  type: integer
+                created:
+                  type: string
+                last_modified:
+                  type: string
+                cache_last_updated:
+                  type: string
+                upload:
+                  type: string
+                  format: binary
+  group_patch:
+    patch:
+      operationId: group_patch
+      summary: group_patch
+      description: |
+        Patch a group.
+
+        The difference between the update and patch methods is that the patch will perform an update of the provided parameters, while leaving all other parameters unchanged, whereas the update methods deletes all parameters not explicitly provided in the data_dict.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the name or id of the group
+                name:
+                  type: string
+                  description: the name of the group, a string between 2 and 100 characters long, containing only lowercase alphanumeric characters, `-`, and `_`
+                title:
+                  type: string
+                  description: the title of the group
+                description:
+                  type: string
+                  description: the description of the group
+                image_url:
+                  type: string
+                  description: the URL to an image to be displayed on the group's page
+                type:
+                  type: string
+                  description: "the type of the group (default: `'group'`), `IGroupForm` plugins associate themselves with different group types and provide custom group handling behavior for these types cannot be 'organization'"
+                state:
+                  type: string
+                  description: "the current state of the group, e.g. `'active'` or `'deleted'`, only active groups show up in search results and other lists of groups, this parameter will be ignored if you are not authorized to change the state of the group (default: `'active'`)"
+                approval_status:
+                  type: string
+                extras:
+                  type: array
+                  description: "the group's extras, extras are arbitrary (key: value) metadata items that can be added to groups, each extra dictionary should have keys `'key'` (a string), `'value'` (a string), and optionally `'deleted'`"
+                  items:
+                    type: object
+                    additionalProperties: true
+                packages:
+                  type: array
+                  description: "the datasets (packages) that belong to the group, a list of dictionaries each with keys `'name'` (string, the id or name of the dataset) and optionally `'title'` (string, the title of the dataset)"
+                  items:
+                    type: object
+                    additionalProperties: true
+                groups:
+                  type: array
+                  description: "the groups that belong to the group, a list of dictionaries each with key `'name'` (string, the id or name of the group) and optionally `'capacity'` (string, the capacity in which the group is a member of the group)"
+                  items:
+                    type: object
+                    additionalProperties: true
+                users:
+                  type: array
+                  description: "the users that belong to the group, a list of dictionaries each with key `'name'` (string, the id or name of the user) and optionally `'capacity'` (string, the capacity in which the user is a member of the group)"
+                  items:
+                    type: object
+                    additionalProperties: true
+  organization_patch:
+    patch:
+      operationId: organization_patch
+      summary: organization_patch
+      description: |
+        Patch an organization.
+
+        The difference between the update and patch methods is that the patch will perform an update of the provided parameters, while leaving all other parameters unchanged, whereas the update methods deletes all parameters not explicitly provided in the data_dict.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the name or id of the organization
+                name:
+                  type: string
+                  description: the name of the organization, a string between 2 and 100 characters long, containing only lowercase alphanumeric characters, `-`, and `_`
+                title:
+                  type: string
+                  description: the title of the organization
+                description:
+                  type: string
+                  description: the description of the organization
+                image_url:
+                  type: string
+                  description: the URL to an image to be displayed on the organization's page
+                state:
+                  type: string
+                  description: "the current state of the organization, e.g. `'active'` or `'deleted'`, only active organization show up in search results and other lists of organization, this parameter will be ignored if you are not authorized to change the state of the organization (default: `'active'`)"
+                approval_status:
+                  type: string
+                extras:
+                  type: array
+                  description: "the organization's extras, extras are arbitrary (key: value) metadata items that can be added to organization, each extra dictionary should have keys `'key'` (a string), `'value'` (a string), and optionally `'deleted'`"
+                  items:
+                    type: object
+                    additionalProperties: true
+                packages:
+                  type: array
+                  description: "ignored. use `package_owner_org_update()` to change package ownership"
+                  items:
+                    type: object
+                    additionalProperties: true
+                users:
+                  type: array
+                  description: "the users that belong to the organization, a list of dictionaries each with key `'name'` (string, the id or name of the user) and optionally `'capacity'` (string, the capacity in which the user is a member of the organization)"
+                  items:
+                    type: object
+                    additionalProperties: true
+  user_patch:
+    patch:
+      operationId: user_patch
+      summary: user_patch
+      description: |
+        Patch a user.
+
+        The difference between the update and patch methods is that the patch will perform an update of the provided parameters, while leaving all other parameters unchanged, whereas the update methods deletes all parameters not explicitly provided in the data_dict.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the name or id of the user
+                name:
+                  type: string
+                  description: the name of the new user, a string between 2 and 100 characters long, containing only lowercase alphanumeric characters, `-`, and `_`
+                email:
+                  type: string
+                  description: the email address for the new user
+                password:
+                  type: string
+                  description: the password of the new user, a string of at least 4 characters
+                fullname:
+                  type: string
+                  description: the full name of the new user
+                about:
+                  type: string
+                  description: a description of the new user
+                image_url:
+                  type: string
+                  # Original docs say "group's page" which should be fixed
+                  description: the URL to an image to be displayed on the user's page
+                plugin_extras:
+                  type: object
+                  description: |
+                    private extra user data belonging to plugins. Only sysadmin users may set this value. It should be a dict that can be dumped into JSON, and plugins should namespace their extras with the plugin name to avoid collisions with other plugins, e.g.:
+
+                    ```json
+                    {
+                        "name": "test_user",
+                        "email": "test@example.com",
+                        "plugin_extras": {
+                            "my_plugin": {
+                                "private_extra": 1
+                            },
+                            "another_plugin": {
+                                "another_extra": True
+                            }
+                        }
+                    }
+                    ```
+                  additionalProperties: true
+                with_apitoken:
+                  type: boolean
+                  description: whether to create an API token for the user
+  user_delete:
+    delete:
+      operationId: user_delete
+      summary: user_delete
+      description: |
+        Delete a user.
+
+        Only sysadmins can delete users.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  # Original docs say "usernamename" which is a typo that should be fixed
+                  description: the id or name of the user to delete
+  package_delete:
+    delete:
+      operationId: package_delete
+      summary: package_delete
+      description: |
+        Delete a dataset (package).
+
+        This makes the dataset disappear from all web & API views, apart from the trash.
+
+        You must be authorized to delete the dataset.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id or name of the dataset to delete
+  dataset_purge:
+    delete:
+      operationId: dataset_purge
+      summary: dataset_purge
+      # Original docs say "Purging a database" which may be a typo for "Purging a dataset"
+      description: |
+        Purge a dataset.
+
+        <Callout title="Warning!" type="warn">Purging a dataset cannot be undone!</Callout>
+
+        Purging a dataset completely removes the dataset from the CKAN database, whereas deleting a dataset simply marks the dataset as deleted (it will no longer show up in the front-end, but is still in the db).
+
+        You must be authorized to purge the dataset.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id or name of the dataset to be purged
+  resource_delete:
+    delete:
+      operationId: resource_delete
+      summary: resource_delete
+      description: |
+        Delete a resource from a dataset.
+
+        You must be a sysadmin or the owner of the resource to delete it.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id of the resource
+  resource_view_delete:
+    delete:
+      operationId: resource_view_delete
+      summary: resource_view_delete
+      description: |
+        Delete a resource_view.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id of the resource_view
+  resource_view_clear:
+    delete:
+      operationId: resource_view_clear
+      summary: resource_view_clear
+      description: |
+        Delete all resource views, or all of a particular type.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                view_types:
+                  type: array
+                  description: specific types to delete
+                  items:
+                    type: string
+  package_relationship_delete:
+    delete:
+      operationId: package_relationship_delete
+      summary: package_relationship_delete
+      description: |
+        Delete a dataset (package) relationship.
+
+        You must be authorised to delete dataset relationships, and to edit both the subject and the object datasets.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                subject:
+                  type: string
+                  description: the id or name of the dataset that is the subject of the relationship
+                object:
+                  type: string
+                  description: the id or name of the dataset that is the object of the relationship
+                type:
+                  type: string
+                  description: the type of the relationship
+  member_delete:
+    delete:
+      operationId: member_delete
+      summary: member_delete
+      description: |
+        Remove an object (e.g. a user, dataset or group) from a group.
+
+        You must be authorized to edit a group to remove objects from it.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id of the group
+                object:
+                  type: string
+                  description: the id or name of the object to be removed
+                object_type:
+                  type: string
+                  description: the type of the object to be removed, e.g. `package` or `user`
+  package_collaborator_delete:
+    delete:
+      operationId: package_collaborator_delete
+      summary: package_collaborator_delete
+      description: |
+        Remove a collaborator from a dataset.
+
+        Currently you must be an Admin on the dataset owner organization to manage collaborators.
+
+        Note: This action requires the collaborators feature to be enabled with the [`ckan.auth.allow_dataset_collaborators`](https://docs.ckan.org/en/2.11/maintaining/configuration.html#ckan-auth-allow-dataset-collaborators) configuration option.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id or name of the dataset
+                user_id:
+                  type: string
+                  description: the id or name of the user to remove
+  group_delete:
+    delete:
+      operationId: group_delete
+      summary: group_delete
+      description: |
+        Delete a group.
+
+        You must be authorized to delete the group.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the name or id of the group
+  organization_delete:
+    delete:
+      operationId: organization_delete
+      summary: organization_delete
+      description: |
+        Delete an organization.
+
+        You must be authorized to delete the organization and no datasets should belong to the organization unless `'ckan.auth.create_unowned_dataset=True'`
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the name or id of the organization
+  group_purge:
+    delete:
+      operationId: group_purge
+      summary: group_purge
+      # Original docs say "Datasets in the organization will remain", however this should probably say "in the group"
+      description: |
+        Purge a group.
+
+        <Callout title="Warning!" type="warn">Purging a group cannot be undone!</Callout>
+
+        Purging a group completely removes the group from the CKAN database, whereas deleting a group simply marks the group as deleted (it will no longer show up in the frontend, but is still in the db).
+
+        Datasets in the group will remain, just not in the purged group.
+
+        You must be authorized to purge the group.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the name or id of the group to be purged
+  organization_purge:
+    delete:
+      operationId: organization_purge
+      summary: organization_purge
+      # Original docs say "any more" when it should be "anymore"
+      description: |
+        Purge an organization.
+
+        <Callout title="Warning!" type="warn">Purging an organization cannot be undone!</Callout>
+
+        Purging an organization completely removes the organization from the CKAN database, whereas deleting a organization simply marks the organization as deleted (it will no longer show up in the frontend, but is still in the db).
+
+        Datasets owned by the organization will remain, just not in an organization anymore.
+
+        You must be authorized to purge the organization.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the name or id of the organization to be purged
+  task_status_delete:
+    delete:
+      operationId: task_status_delete
+      summary: task_status_delete
+      description: |
+        Delete a task status.
+
+        You must be a sysadmin to delete task statuses.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id of the task status to delete
+  vocabulary_delete:
+    delete:
+      operationId: vocabulary_delete
+      summary: vocabulary_delete
+      description: |
+        Delete a tag vocabulary.
+
+        You must be a sysadmin to delete vocabularies.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id of the vocabulary
+  tag_delete:
+    delete:
+      operationId: tag_delete
+      summary: tag_delete
+      description: |
+        Delete a tag.
+
+        You must be a sysadmin to delete tags.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id or name of the tag
+                vocabulary_id:
+                  type: string
+                  description: "the id or name of the vocabulary that the tag belongs to (default: `None`)"
+  unfollow_user:
+    delete:
+      operationId: unfollow_user
+      summary: unfollow_user
+      description: |
+        Stop following a user.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id or name of the user to stop following
+  unfollow_dataset:
+    delete:
+      operationId: unfollow_dataset
+      summary: unfollow_dataset
+      description: |
+        Stop following a dataset.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id or name of the dataset to stop following
+  group_member_delete:
+    delete:
+      operationId: group_member_delete
+      summary: group_member_delete
+      description: |
+        Remove a user from a group.
+
+        You must be authorized to edit the group.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id or name of the group
+                username:
+                  type: string
+                  description: name or id of the user to be removed
+  organization_member_delete:
+    delete:
+      operationId: organization_member_delete
+      summary: organization_member_delete
+      description: |
+        Remove a user from an organization.
+
+        You must be authorized to edit the organization.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id or name of the organization
+                username:
+                  type: string
+                  description: name or id of the user to be removed
+  unfollow_group:
+    delete:
+      operationId: unfollow_group
+      summary: unfollow_group
+      description: |
+        Stop following a group.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: the id or name of the group to stop following
+  job_clear:
+    delete:
+      operationId: job_clear
+      summary: job_clear
+      description: |
+        Clear background job queues.
+
+        Does not affect jobs that are already being processed.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                queues:
+                  type: array
+                  description: The queues to clear. If not given then ALL queues are cleared.
+                  items:
+                    type: string
+  job_cancel:
+    delete:
+      operationId: job_cancel
+      summary: job_cancel
+      description: |
+        Cancel a queued background job.
+
+        Removes the job from the queue and deletes it.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: The ID of the background job.
+  api_token_revoke:
+    delete:
+      operationId: api_token_revoke
+      summary: api_token_revoke
+      description: |
+        Delete API Token.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                  # Original docs don't have a space between remove and (
+                  description: Token to remove (required if `jti` not specified)
+                jti:
+                  type: string
+                  # Original docs don't capitalize D in ID and don't have space between remove and (
+                  description: ID of the token to remove (overrides `token` if specified)
