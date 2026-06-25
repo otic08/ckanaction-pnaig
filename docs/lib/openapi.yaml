@@ -14,7 +14,7 @@ components:
       name: Authorization
       description: CKAN API token
 servers:
-  - url: http://10.10.230.219:8080/api/3/action
+  - url: http://localhost:5000/api/3/action
   - url: "{protocol}://{domain}/api/3/action"
     description: Your custom server running the CKAN Actions API (v3).
     variables:
@@ -1512,10 +1512,13 @@ paths:
                   description: no longer than 100 characters
                 state:
                   type: string
-                  description: "the current state of the dataset, e.g. `'active'` or `'deleted'`, only active datasets show up in search results and other lists of datasets, thsi parameter will be ignored if you are not authorized to change the state of the dataset (default: `'active`')"
+                  description: "the current state of the dataset, e.g. `'active'` or `'deleted'`, only active datasets show up in search results and other lists of datasets, this parameter will be ignored if you are not authorized to change the state of the dataset (default: `'active`')"
                 type:
                   type: string
                   description: the type of the dataset, `IDatasetForm` plugins associate themselves with different dataset types and provide custom dataset handling behaviour for these types
+                dataset_start_timestamp:
+                  type: string
+                  description: the dataset's start timestamp, in ISO 8601 format, e.g.
                 resources:
                   type: array
                   description: the dataset's resources
@@ -3728,7 +3731,7 @@ paths:
                   type: string
                   description: the name or id of the organization
   group_purge:
-    post:
+    delete:
       operationId: group_purge
       summary: group_purge
       # Original docs say "Datasets in the organization will remain", however this should probably say "in the group"
@@ -3753,7 +3756,7 @@ paths:
                   type: string
                   description: the name or id of the group to be purged
   organization_purge:
-    post:
+    delete:
       operationId: organization_purge
       summary: organization_purge
       # Original docs say "any more" when it should be "anymore"
