@@ -6,7 +6,7 @@ const withMDX = createMDX();
 const config = {
   reactStrictMode: true,
   devIndicators: false,
-  allowedDevOrigins: ["10.10.150.49"],
+  allowedDevOrigins: ["10.10.230.219"],
   transpilePackages: ["shiki"],
   async rewrites() {
     return [
