@@ -1,12 +1,17 @@
 {
-    "pages": [
-        "--- ---",
-        "index",
-        "---🎁 Interactive CKAN API GUI---",
-        "...",
-        "--- ---",
-        "[Source Code](https://github.com/dathere/ckanaction)",
-        "[Support and Feedback](https://support.dathere.com)",
-        "[Privacy Policy](https://dathere.com/privacy-policy/)"
-    ]
+  "pages": [
+    "datasets",
+    "membership",
+    "groups",
+    "organizations",
+    "general",
+    "tags-and-vocabularies",
+    "users",
+    "jobs-and-tasks",
+    "translations",
+    "following",
+    "configuration",
+    "api-tokens",
+    "pnaig-api"
+  ]
 }

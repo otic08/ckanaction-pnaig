@@ -13,6 +13,20 @@ components:
       in: header
       name: Authorization
       description: CKAN API token
+tags:
+  - name: Datasets
+  - name: Organizations
+  - name: Groups
+  - name: Users
+  - name: Membership
+  - name: Following
+  - name: Api Tokens
+  - name: Configuration
+  - name: Jobs and Tasks
+  - name: Tags and Vocabularies
+  - name: Translations
+  - name: Pnaig Api
+  - name: General
 servers:
   - url: http://localhost:5000/api/3/action
   - url: '{protocol}://{domain}/api/3/action'
@@ -29,6 +43,8 @@ paths:
   package_list:
     post:
       operationId: package_list
+      tags:
+        - Datasets
       summary: package_list
       description: Return a list of the name of the site's datasets (packages).
       requestBody:
@@ -74,6 +90,8 @@ paths:
   'current_package_list_with_resources':
     post:
       operationId: current_package_list_with_resources
+      tags:
+        - Datasets
       summary: current_package_list_with_resources
       description: |
         Return a list of the site's datasets (packages) and their resources.
@@ -95,6 +113,8 @@ paths:
   'member_list':
     post:
       operationId: member_list
+      tags:
+        - Membership
       summary: member_list
       description: |
         Return the members of a group.
@@ -119,6 +139,8 @@ paths:
   'package_collaborator_list':
     post:
       operationId: package_collaborator_list
+      tags:
+        - Datasets
       summary: package_collaborator_list
       description: |
         Return the list of all collaborators for a given dataset (package).
@@ -142,6 +164,8 @@ paths:
   'package_collaborator_list_for_user':
     post:
       operationId: package_collaborator_list_for_user
+      tags:
+        - Datasets
       summary: package_collaborator_list_for_user
       description: |
         Return the list of all datasets the user is a collaborator in.
@@ -163,6 +187,8 @@ paths:
   'group_list':
     post:
       operationId: group_list
+      tags:
+        - Groups
       summary: group_list
       description: |
         Return a list of the names of the site's groups.
@@ -212,6 +238,8 @@ paths:
   'organization_list':
     post:
       operationId: organization_list
+      tags:
+        - Organizations
       summary: organization_list
       description: |
         Return a list of the names of the site's organizations.
@@ -264,6 +292,8 @@ paths:
   'group_list_authz':
     post:
       operationId: group_list_authz
+      tags:
+        - Groups
       summary: group_list_authz
       description: |
         Return the list of groups that the user is authorized to edit.
@@ -283,6 +313,8 @@ paths:
   'organization_list_for_user':
     post:
       operationId: organization_list_for_user
+      tags:
+        - Organizations
       summary: organization_list_for_user
       description: |
         Return the organizations that the user has a given permission for.
@@ -315,12 +347,16 @@ paths:
   'license_list':
     post:
       operationId: license_list
+      tags:
+        - General
       summary: license_list
       description: |
         Return the list of licenses available for datasets on the site.
   'tag_list':
     post:
       operationId: tag_list
+      tags:
+        - Tags and Vocabularies
       summary: tag_list
       description: |
         Return a list of the site's tags.
@@ -346,6 +382,8 @@ paths:
   'user_list':
     post:
       operationId: user_list
+      tags:
+        - Users
       summary: user_list
       description: |
         Return a list of the site's user accounts.
@@ -375,6 +413,8 @@ paths:
   'package_relationships_list':
     post:
       operationId: package_relationships_list
+      tags:
+        - Datasets
       summary: package_relationships_list
       description: |
         Return a datset's relationships.
@@ -397,6 +437,8 @@ paths:
   'package_show':
     post:
       operationId: package_show
+      tags:
+        - Datasets
       summary: package_show
       description: Return the metadata of a dataset and its resources.
       requestBody:
@@ -447,6 +489,8 @@ paths:
   'resource_show':
     post:
       operationId: resource_show
+      tags:
+        - Datasets
       summary: resource_show
       description: Return the metadata of a resource.
       requestBody:
@@ -462,6 +506,8 @@ paths:
   'resource_view_show':
     post:
       operationId: resource_view_show
+      tags:
+        - Datasets
       summary: resource_view_show
       description: Return the metadata of a resource_view.
       requestBody:
@@ -477,6 +523,8 @@ paths:
   resource_view_list:
     post:
       operationId: resource_view_list
+      tags:
+        - Datasets
       summary: resource_view_list
       description: Return the list of resource views for a particular resource.
       requestBody:
@@ -492,6 +540,8 @@ paths:
   group_show:
     post:
       operationId: group_show
+      tags:
+        - Groups
       summary: group_show
       description: Return the details of a group (only its first 1000 datasets are returned).
       requestBody:
@@ -528,6 +578,8 @@ paths:
   organization_show:
     post:
       operationId: organization_show
+      tags:
+        - Organizations
       summary: organization_show
       # Original docs typo "a" instead of "an"
       description: Return the details of an organization (only its first 10 datasets are returned).
@@ -565,6 +617,8 @@ paths:
   group_package_show:
     post:
       operationId: group_package_show
+      tags:
+        - Groups
       summary: group_package_show
       description: Return the datasets (packages) of a group.
       requestBody:
@@ -583,6 +637,8 @@ paths:
   tag_show:
     post:
       operationId: tag_show
+      tags:
+        - Tags and Vocabularies
       summary: tag_show
       description: Return the details of a tag and all its datasets.
       requestBody:
@@ -604,6 +660,8 @@ paths:
   user_show:
     post:
       operationId: user_show
+      tags:
+        - Users
       summary: user_show
       description: |
         Return a user account.
@@ -634,6 +692,8 @@ paths:
   package_autocomplete:
     post:
       operationId: package_autocomplete
+      tags:
+        - Datasets
       summary: package_autocomplete
       description: |
         Return a list of datasets (packages) that match a string.
@@ -656,6 +716,8 @@ paths:
   format_autocomplete:
     post:
       operationId: format_autocomplete
+      tags:
+        - General
       summary: format_autocomplete
       description: |
         Return a list of resource formats whose names contain a string.
@@ -675,6 +737,8 @@ paths:
   user_autocomplete:
     post:
       operationId: user_autocomplete
+      tags:
+        - Users
       summary: user_autocomplete
       description: |
         Return a list of user names that contain a string.
@@ -694,6 +758,8 @@ paths:
   group_autocomplete:
     post:
       operationId: group_autocomplete
+      tags:
+        - Groups
       summary: group_autocomplete
       description: |
         Return a list of group names that contain a string.
@@ -713,6 +779,8 @@ paths:
   organization_autocomplete:
     post:
       operationId: organization_autocomplete
+      tags:
+        - Organizations
       summary: organization_autocomplete
       description: |
         Return a list of organization names that contain a string.
@@ -732,6 +800,8 @@ paths:
   package_search:
     post:
       operationId: package_search
+      tags:
+        - Datasets
       summary: package_search
       description: |
         Searches for packages satisfying a given search criteria.
@@ -842,6 +912,8 @@ paths:
   resource_search:
     post:
       operationId: resource_search
+      tags:
+        - Datasets
       summary: resource_search
       description: |
         Searches for resources in public Datasets satisfying the search criteria.
@@ -901,6 +973,8 @@ paths:
   tag_search:
     post:
       operationId: tag_search
+      tags:
+        - Tags and Vocabularies
       summary: tag_search
       description: |
         Return a list of tags whose names contain a given string.
@@ -928,6 +1002,8 @@ paths:
   tag_autocomplete:
     post:
       operationId: tag_autocomplete
+      tags:
+        - Tags and Vocabularies
       summary: tag_autocomplete
       description: |
         Return a list of tag names that contain a given string.
@@ -955,6 +1031,8 @@ paths:
   task_status_show:
     post:
       operationId: task_status_show
+      tags:
+        - Jobs and Tasks
       summary: task_status_show
       description: |
         Return a task status.
@@ -982,6 +1060,8 @@ paths:
   term_translation_show:
     post:
       operationId: term_translation_show
+      tags:
+        - Translations
       summary: term_translation_show
       description: |
         Return the translations for the given term(s) and language(s).
@@ -1005,6 +1085,8 @@ paths:
   get_site_user:
     post:
       operationId: get_site_user
+      tags:
+        - General
       summary: get_site_user
       description: |
         Return the CKAN site user.
@@ -1021,6 +1103,8 @@ paths:
   status_show:
       get:
         operationId: status_show
+        tags:
+          - General
         summary: status_show
         description: This endpoint shows information about the CKAN instance.
         x-codeSamples:
@@ -1050,12 +1134,16 @@ paths:
   vocabulary_list:
     post:
       operationId: vocabulary_list
+      tags:
+        - Tags and Vocabularies
       summary: vocabulary_list
       description: |
         Return a list of all the site's tag vocabularies.
   vocabulary_show:
     post:
       operationId: vocabulary_show
+      tags:
+        - Tags and Vocabularies
       summary: vocabulary_show
       description: |
         Return a single tag vocabulary.
@@ -1072,6 +1160,8 @@ paths:
   user_follower_count:
     post:
       operationId: user_follower_count
+      tags:
+        - Users
       summary: user_follower_count
       description: |
         Returun the number of followers of a user.
@@ -1088,6 +1178,8 @@ paths:
   dataset_follower_count:
     post:
       operationId: dataset_follower_count
+      tags:
+        - Datasets
       summary: dataset_follower_count
       description: |
         Returun the number of followers of a dataset.
@@ -1104,6 +1196,8 @@ paths:
   organization_follower_count:
     post:
       operationId: organization_follower_count
+      tags:
+        - Organizations
       summary: organization_follower_count
       description: |
         Returun the number of followers of an organization.
@@ -1120,6 +1214,8 @@ paths:
   user_follower_list:
     post:
       operationId: user_follower_list
+      tags:
+        - Users
       summary: user_follower_list
       description: |
         Return the list of users that are following the given user.
@@ -1136,6 +1232,8 @@ paths:
   dataset_follower_list:
     post:
       operationId: dataset_follower_list
+      tags:
+        - Datasets
       summary: dataset_follower_list
       description: |
         Return the list of users that are following the given dataset.
@@ -1152,6 +1250,8 @@ paths:
   group_follower_list:
     post:
       operationId: group_follower_list
+      tags:
+        - Groups
       summary: group_follower_list
       description: |
         Return the list of users that are following the given group.
@@ -1168,6 +1268,8 @@ paths:
   organization_follower_list:
     post:
       operationId: organization_follower_list
+      tags:
+        - Organizations
       summary: organization_follower_list
       description: |
         Return the list of users that are following the given organization.
@@ -1184,6 +1286,8 @@ paths:
   am_following_user:
     post:
       operationId: am_following_user
+      tags:
+        - Following
       summary: am_following_user
       description: |
         Return `True` if you're following the given user, `False` if not.
@@ -1200,6 +1304,8 @@ paths:
   am_following_dataset:
     post:
       operationId: am_following_dataset
+      tags:
+        - Following
       summary: am_following_dataset
       description: |
         Return `True` if you're following the given dataset, `False` if not.
@@ -1216,6 +1322,8 @@ paths:
   am_following_group:
     post:
       operationId: am_following_group
+      tags:
+        - Following
       summary: am_following_group
       description: |
         Return `True` if you're following the given group, `False` if not.
@@ -1232,6 +1340,8 @@ paths:
   followee_count:
     post:
       operationId: followee_count
+      tags:
+        - Following
       summary: followee_count
       description: |
         Return the number of objects that are followed by the given user.
@@ -1250,6 +1360,8 @@ paths:
   user_followee_count:
     post:
       operationId: user_followee_count
+      tags:
+        - Users
       summary: user_followee_count
       description: |
         Return the number of users that are followed by the given user.
@@ -1266,6 +1378,8 @@ paths:
   dataset_followee_count:
     post:
       operationId: dataset_followee_count
+      tags:
+        - Datasets
       summary: dataset_followee_count
       description: |
         Return the number of datasets that are followed by the given user.
@@ -1282,6 +1396,8 @@ paths:
   group_followee_count:
     post:
       operationId: group_followee_count
+      tags:
+        - Groups
       summary: group_followee_count
       description: |
         Return the number of groups that are followed by the given user.
@@ -1298,6 +1414,8 @@ paths:
   organization_followee_count:
     post:
       operationId: organization_followee_count
+      tags:
+        - Organizations
       summary: organization_followee_count
       description: |
         Return the number of organizations that are followed by the given user.
@@ -1314,6 +1432,8 @@ paths:
   followee_list:
     post:
       operationId: followee_list
+      tags:
+        - Following
       summary: followee_list
       description: |
         Return the list of objects that are followed by the given user.
@@ -1335,6 +1455,8 @@ paths:
   organization_followee_list:
     post:
       operationId: organization_followee_list
+      tags:
+        - Organizations
       summary: organization_followee_list
       description: |
         Return the list of organizations that are followed by the given user.
@@ -1351,6 +1473,8 @@ paths:
   member_roles_list:
     post:
       operationId: member_roles_list
+      tags:
+        - Membership
       summary: member_roles_list
       description: |
         Return the possible roles for members of groups and organizations.
@@ -1367,6 +1491,8 @@ paths:
   help_show:
     post:
       operationId: help_show
+      tags:
+        - General
       summary: help_show
       description: |
         Return the help string for a particular API action.
@@ -1383,6 +1509,8 @@ paths:
   config_option_show:
     post:
       operationId: config_option_show
+      tags:
+        - Configuration
       summary: config_option_show
       description: |
         Show the current value of a particular configuration option.
@@ -1401,12 +1529,16 @@ paths:
   config_option_list:
     post:
       operationId: config_option_list
+      tags:
+        - Configuration
       summary: config_option_list
       description: |
         Return a list of runtime-editable config option keys that can be updated with `config_option_update()`.
   job_list:
     post:
       operationId: job_list
+      tags:
+        - Jobs and Tasks
       summary: job_list
       description: |
         List enqueued background jobs.
@@ -1425,6 +1557,8 @@ paths:
   job_show:
     post:
       operationId: job_show
+      tags:
+        - Jobs and Tasks
       summary: job_show
       description: |
         Show details for a background job.
@@ -1441,6 +1575,8 @@ paths:
   api_token_list:
     post:
       operationId: api_token_list
+      tags:
+        - Api Tokens
       summary: api_token_list
       description: |
         Return list of all available API tokens for the current user.
@@ -1457,6 +1593,8 @@ paths:
   package_create:
     post:
       operationId: package_create
+      tags:
+        - Datasets
       summary: package_create
       description: |
         Create a new dataset (package).
@@ -1630,6 +1768,8 @@ paths:
   resource_create:
     post:
       operationId: resource_create
+      tags:
+        - Datasets
       summary: resource_create
       description: |
         Appends a new resource to a datasets list of resources.
@@ -1676,6 +1816,8 @@ paths:
   resource_view_create:
     post:
       operationId: resource_view_create
+      tags:
+        - Datasets
       summary: resource_view_create
       description: |
         Creates a new resource view.
@@ -1704,6 +1846,8 @@ paths:
   resource_create_default_resource_views:
     post:
       operationId: resource_create_default_resource_views
+      tags:
+        - Datasets
       summary: resource_create_default_resource_views
       description: |
         Creates the default views (if necessary) on the provided resource
@@ -1734,6 +1878,8 @@ paths:
   package_create_default_resource_views:
     post:
       operationId: package_create_default_resource_views
+      tags:
+        - Datasets
       summary: package_create_default_resource_views
       description: |
         Creates the default views on all resources of the provided dataset
@@ -1756,6 +1902,8 @@ paths:
   package_relationship_create:
     post:
       operationId: package_relationship_create
+      tags:
+        - Datasets
       summary: package_relationship_create
       description: |
         Create a relationship between two datasets (packages).
@@ -1783,6 +1931,8 @@ paths:
   member_create:
     post:
       operationId: member_create
+      tags:
+        - Membership
       summary: member_create
       description: |
         Make an object (e.g. a user, dataset or group) a member of a group.
@@ -1812,6 +1962,8 @@ paths:
   package_collaborator_create:
     post:
       operationId: package_collaborator_create
+      tags:
+        - Datasets
       summary: package_collaborator_create
       description: |
         Make a user a collaborator in a dataset.
@@ -1840,6 +1992,8 @@ paths:
   group_create:
     post:
       operationId: group_create
+      tags:
+        - Groups
       summary: group_create
       description: |
         Create a new group.
@@ -1904,6 +2058,8 @@ paths:
   organization_create:
     post:
       operationId: organization_create
+      tags:
+        - Organizations
       summary: organization_create
       description: |
         Create a new organization.
@@ -1959,6 +2115,8 @@ paths:
   user_create:
     post:
       operationId: user_create
+      tags:
+        - Users
       summary: user_create
       description: |
         Create a new user.
@@ -2019,6 +2177,8 @@ paths:
   user_invite:
     post:
       operationId: user_invite
+      tags:
+        - Users
       summary: user_invite
       description: |
         Invite a new user.
@@ -2043,6 +2203,8 @@ paths:
   vocabulary_create:
     post:
       operationId: vocabulary_create
+      tags:
+        - Tags and Vocabularies
       summary: vocabulary_create
       description: |
         Create a new tag vocabulary.
@@ -2073,6 +2235,8 @@ paths:
   tag_create:
     post:
       operationId: tag_create
+      tags:
+        - Tags and Vocabularies
       summary: tag_create
       description: |
         Create a new vocabulary tag.
@@ -2096,6 +2260,8 @@ paths:
   follow_user:
     post:
       operationId: follow_user
+      tags:
+        - Following
       summary: follow_user
       description: |
         Start following another user.
@@ -2114,6 +2280,8 @@ paths:
   follow_dataset:
     post:
       operationId: follow_dataset
+      tags:
+        - Following
       summary: follow_dataset
       description: |
         Start following a dataset.
@@ -2132,6 +2300,8 @@ paths:
   group_member_create:
     post:
       operationId: group_member_create
+      tags:
+        - Groups
       summary: group_member_create
       description: |
         Make a user a member of a group.
@@ -2156,6 +2326,8 @@ paths:
   organization_member_create:
     post:
       operationId: organization_member_create
+      tags:
+        - Organizations
       summary: organization_member_create
       description: |
         Make a user a member of an organization.
@@ -2180,6 +2352,8 @@ paths:
   follow_group:
     post:
       operationId: follow_group
+      tags:
+        - Following
       summary: follow_group
       description: |
         Start following a group.
@@ -2198,6 +2372,8 @@ paths:
   api_token_create:
     post:
       operationId: api_token_create
+      tags:
+        - Api Tokens
       summary: api_token_create
       description: |
         Create new API Token for current user.
@@ -2217,8 +2393,10 @@ paths:
                   type: string
                   description: distinctive name for API Token
   resource_update:
-    put:
+    post:
       operationId: resource_update
+      tags:
+        - Datasets
       summary: resource_update
       description: |
         Update a resource.
@@ -2270,8 +2448,10 @@ paths:
                   type: string
                   format: binary
   resource_view_update:
-    put:
+    post:
       operationId: resource_view_update
+      tags:
+        - Datasets
       summary: resource_view_update
       description: |
         Update a resource view.
@@ -2303,8 +2483,10 @@ paths:
                   type: string
                   description: (JSON string) options necessary to recreate a view state
   resource_view_reorder:
-    put:
+    post:
       operationId: resource_view_reorder
+      tags:
+        - Datasets
       summary: resource_view_reorder
       description: |
         Reorder resource views.
@@ -2324,8 +2506,10 @@ paths:
                   items:
                     type: string
   package_update:
-    put:
+    post:
       operationId: package_update
+      tags:
+        - Datasets
       summary: package_update
       description: |
         Update a dataset (package).
@@ -2504,8 +2688,10 @@ paths:
                   type: string
                   description: "the id of the dataset's owning organization, see `organization_list()` or `organization_list_for_user()` for available values. This parameter can be made optional if the config option [`ckan.auth.create_unowned_dataset`](https://docs.ckan.org/en/2.11/maintaining/configuration.html#ckan-auth-create-unowned-dataset) is set to `True`."
   package_revise:
-    put:
+    post:
       operationId: package_revise
+      tags:
+        - Datasets
       summary: package_revise
       description: |
         Revise a dataset (package) selectively with match, filter, and update parameters.
@@ -2595,8 +2781,10 @@ paths:
                   items:
                     type: string
   package_resource_reorder:
-    put:
+    post:
       operationId: package_resource_reorder
+      tags:
+        - Datasets
       summary: package_resource_reorder
       description: |
         Reorder resources against datasets. If only partial resource ids are supplied then these are assumed to be first and the other resources will stay in their original order.
@@ -2616,8 +2804,10 @@ paths:
                   items:
                     type: string
   package_relationship_update:
-    put:
+    post:
       operationId: package_relationship_update
+      tags:
+        - Datasets
       summary: package_relationship_update
       description: |
         Update a relationship between two datasets (packages).
@@ -2645,8 +2835,10 @@ paths:
                   type: string
                   description: a comment about the relationship
   group_update:
-    put:
+    post:
       operationId: group_update
+      tags:
+        - Groups
       summary: group_update
       description: |
         Update a group.
@@ -2711,8 +2903,10 @@ paths:
                     type: object
                     additionalProperties: true
   organization_update:
-    put:
+    post:
       operationId: organization_update
+      tags:
+        - Organizations
       summary: organization_update
       # Original docs say "a organization" when it should be "an organization"
       description: |
@@ -2769,6 +2963,8 @@ paths:
   user_update:
     post:
       operationId: user_update
+      tags:
+        - Users
       summary: user_update
       description: |
         Update a user account.
@@ -2829,8 +3025,10 @@ paths:
                   type: boolean
                   description: whether to create an API token for the user
   task_status_update:
-    put:
+    post:
       operationId: task_status_update
+      tags:
+        - Jobs and Tasks
       summary: task_status_update
       description: |
         Update a task status.
@@ -2862,8 +3060,10 @@ paths:
                 error:
                   type: string
   task_status_update_many:
-    put:
+    post:
       operationId: task_status_update_many
+      tags:
+        - Jobs and Tasks
       summary: task_status_update_many
       description: |
         Update many task statuses at once.
@@ -2900,8 +3100,10 @@ paths:
                       error:
                         type: string
   term_translation_update:
-    put:
+    post:
       operationId: term_translation_update
+      tags:
+        - Translations
       summary: term_translation_update
       description: |
         Create or update a term translation.
@@ -2924,8 +3126,10 @@ paths:
                   type: string
                   description: the language code of the translation, e.g. `'de'`
   term_translation_update_many:
-    put:
+    post:
       operationId: term_translation_update_many
+      tags:
+        - Translations
       summary: term_translation_update_many
       description: |
         Create or update many term translations at once.
@@ -2952,8 +3156,10 @@ paths:
                         type: string
                         description: the language code of the translation, e.g. `'de'`
   vocabulary_update:
-    put:
+    post:
       operationId: vocabulary_update
+      tags:
+        - Tags and Vocabularies
       summary: vocabulary_update
       description: |
         Update a tag vocabulary.
@@ -2985,8 +3191,10 @@ paths:
                         type: string
                         description: "the id of the vocabulary that the new tag should be added to, e.g. the id of vocabulary `'Genre'`"
   package_owner_org_update:
-    put:
+    post:
       operationId: package_owner_org_update
+      tags:
+        - Datasets
       summary: package_owner_org_update
       description: |
         Update the owning organization of a dataset.
@@ -3004,8 +3212,10 @@ paths:
                   type: string
                   description: the name or id of the owning organization
   bulk_update_private:
-    put:
+    post:
       operationId: bulk_update_private
+      tags:
+        - Datasets
       summary: bulk_update_private
       description: |
         Make a list of datasets private.
@@ -3025,8 +3235,10 @@ paths:
                   type: string
                   description: id of the owning organization
   bulk_update_public:
-    put:
+    post:
       operationId: bulk_update_public
+      tags:
+        - Datasets
       summary: bulk_update_public
       description: |
         Make a list of datasets public.
@@ -3046,8 +3258,10 @@ paths:
                   type: string
                   description: id of the owning organization
   bulk_update_delete:
-    put:
+    post:
       operationId: bulk_update_delete
+      tags:
+        - Datasets
       summary: bulk_update_delete
       description: |
         Make a list of datasets deleted.
@@ -3067,8 +3281,10 @@ paths:
                   type: string
                   description: id of the owning organization
   config_option_update:
-    put:
+    post:
       operationId: config_option_update
+      tags:
+        - Configuration
       summary: config_option_update
       description: |
         Added in version 2.4.
@@ -3097,8 +3313,10 @@ paths:
                   type: string
                   description: a configuration option key (e.g. `ckan.site_title`). It must be present on the `update_configuration_schema`
   package_patch:
-    patch:
+    post:
       operationId: package_patch
+      tags:
+        - Datasets
       summary: package_patch
       description: |
         Patch a dataset (package).
@@ -3275,8 +3493,10 @@ paths:
                   type: string
                   description: "the id of the dataset's owning organization, see `organization_list()` or `organization_list_for_user()` for available values. This parameter can be made optional if the config option [`ckan.auth.create_unowned_dataset`](https://docs.ckan.org/en/2.11/maintaining/configuration.html#ckan-auth-create-unowned-dataset) is set to `True`."
   resource_patch:
-    patch:
+    post:
       operationId: resource_patch
+      tags:
+        - Datasets
       summary: resource_patch
       description: |
         Patch a resource.
@@ -3326,8 +3546,10 @@ paths:
                   type: string
                   format: binary
   group_patch:
-    patch:
+    post:
       operationId: group_patch
+      tags:
+        - Groups
       summary: group_patch
       description: |
         Patch a group.
@@ -3388,8 +3610,10 @@ paths:
                     type: object
                     additionalProperties: true
   organization_patch:
-    patch:
+    post:
       operationId: organization_patch
+      tags:
+        - Organizations
       summary: organization_patch
       description: |
         Patch an organization.
@@ -3441,8 +3665,10 @@ paths:
                     type: object
                     additionalProperties: true
   user_patch:
-    patch:
+    post:
       operationId: user_patch
+      tags:
+        - Users
       summary: user_patch
       description: |
         Patch a user.
@@ -3501,8 +3727,10 @@ paths:
                   type: boolean
                   description: whether to create an API token for the user
   user_delete:
-    delete:
+    post:
       operationId: user_delete
+      tags:
+        - Users
       summary: user_delete
       description: |
         Delete a user.
@@ -3520,8 +3748,10 @@ paths:
                   # Original docs say "usernamename" which is a typo that should be fixed
                   description: the id or name of the user to delete
   package_delete:
-    delete:
+    post:
       operationId: package_delete
+      tags:
+        - Datasets
       summary: package_delete
       description: |
         Delete a dataset (package).
@@ -3540,8 +3770,10 @@ paths:
                   type: string
                   description: the id or name of the dataset to delete
   dataset_purge:
-    delete:
+    post:
       operationId: dataset_purge
+      tags:
+        - Datasets
       summary: dataset_purge
       # Original docs say "Purging a database" which may be a typo for "Purging a dataset"
       description: |
@@ -3563,8 +3795,10 @@ paths:
                   type: string
                   description: the id or name of the dataset to be purged
   resource_delete:
-    delete:
+    post:
       operationId: resource_delete
+      tags:
+        - Datasets
       summary: resource_delete
       description: |
         Delete a resource from a dataset.
@@ -3581,8 +3815,10 @@ paths:
                   type: string
                   description: the id of the resource
   resource_view_delete:
-    delete:
+    post:
       operationId: resource_view_delete
+      tags:
+        - Datasets
       summary: resource_view_delete
       description: |
         Delete a resource_view.
@@ -3597,8 +3833,10 @@ paths:
                   type: string
                   description: the id of the resource_view
   resource_view_clear:
-    delete:
+    post:
       operationId: resource_view_clear
+      tags:
+        - Datasets
       summary: resource_view_clear
       description: |
         Delete all resource views, or all of a particular type.
@@ -3615,8 +3853,10 @@ paths:
                   items:
                     type: string
   package_relationship_delete:
-    delete:
+    post:
       operationId: package_relationship_delete
+      tags:
+        - Datasets
       summary: package_relationship_delete
       description: |
         Delete a dataset (package) relationship.
@@ -3639,8 +3879,10 @@ paths:
                   type: string
                   description: the type of the relationship
   member_delete:
-    delete:
+    post:
       operationId: member_delete
+      tags:
+        - Membership
       summary: member_delete
       description: |
         Remove an object (e.g. a user, dataset or group) from a group.
@@ -3663,8 +3905,10 @@ paths:
                   type: string
                   description: the type of the object to be removed, e.g. `package` or `user`
   package_collaborator_delete:
-    delete:
+    post:
       operationId: package_collaborator_delete
+      tags:
+        - Datasets
       summary: package_collaborator_delete
       description: |
         Remove a collaborator from a dataset.
@@ -3686,8 +3930,10 @@ paths:
                   type: string
                   description: the id or name of the user to remove
   group_delete:
-    delete:
+    post:
       operationId: group_delete
+      tags:
+        - Groups
       summary: group_delete
       description: |
         Delete a group.
@@ -3704,8 +3950,10 @@ paths:
                   type: string
                   description: the name or id of the group
   organization_delete:
-    delete:
+    post:
       operationId: organization_delete
+      tags:
+        - Organizations
       summary: organization_delete
       description: |
         Delete an organization.
@@ -3722,8 +3970,10 @@ paths:
                   type: string
                   description: the name or id of the organization
   group_purge:
-    delete:
+    post:
       operationId: group_purge
+      tags:
+        - Groups
       summary: group_purge
       # Original docs say "Datasets in the organization will remain", however this should probably say "in the group"
       description: |
@@ -3747,8 +3997,10 @@ paths:
                   type: string
                   description: the name or id of the group to be purged
   organization_purge:
-    delete:
+    post:
       operationId: organization_purge
+      tags:
+        - Organizations
       summary: organization_purge
       # Original docs say "any more" when it should be "anymore"
       description: |
@@ -3772,8 +4024,10 @@ paths:
                   type: string
                   description: the name or id of the organization to be purged
   task_status_delete:
-    delete:
+    post:
       operationId: task_status_delete
+      tags:
+        - Jobs and Tasks
       summary: task_status_delete
       description: |
         Delete a task status.
@@ -3790,8 +4044,10 @@ paths:
                   type: string
                   description: the id of the task status to delete
   vocabulary_delete:
-    delete:
+    post:
       operationId: vocabulary_delete
+      tags:
+        - Tags and Vocabularies
       summary: vocabulary_delete
       description: |
         Delete a tag vocabulary.
@@ -3808,8 +4064,10 @@ paths:
                   type: string
                   description: the id of the vocabulary
   tag_delete:
-    delete:
+    post:
       operationId: tag_delete
+      tags:
+        - Tags and Vocabularies
       summary: tag_delete
       description: |
         Delete a tag.
@@ -3829,8 +4087,10 @@ paths:
                   type: string
                   description: "the id or name of the vocabulary that the tag belongs to (default: `None`)"
   unfollow_user:
-    delete:
+    post:
       operationId: unfollow_user
+      tags:
+        - Following
       summary: unfollow_user
       description: |
         Stop following a user.
@@ -3845,8 +4105,10 @@ paths:
                   type: string
                   description: the id or name of the user to stop following
   unfollow_dataset:
-    delete:
+    post:
       operationId: unfollow_dataset
+      tags:
+        - Following
       summary: unfollow_dataset
       description: |
         Stop following a dataset.
@@ -3861,8 +4123,10 @@ paths:
                   type: string
                   description: the id or name of the dataset to stop following
   group_member_delete:
-    delete:
+    post:
       operationId: group_member_delete
+      tags:
+        - Groups
       summary: group_member_delete
       description: |
         Remove a user from a group.
@@ -3882,8 +4146,10 @@ paths:
                   type: string
                   description: name or id of the user to be removed
   organization_member_delete:
-    delete:
+    post:
       operationId: organization_member_delete
+      tags:
+        - Organizations
       summary: organization_member_delete
       description: |
         Remove a user from an organization.
@@ -3903,8 +4169,10 @@ paths:
                   type: string
                   description: name or id of the user to be removed
   unfollow_group:
-    delete:
+    post:
       operationId: unfollow_group
+      tags:
+        - Following
       summary: unfollow_group
       description: |
         Stop following a group.
@@ -3919,8 +4187,10 @@ paths:
                   type: string
                   description: the id or name of the group to stop following
   job_clear:
-    delete:
+    post:
       operationId: job_clear
+      tags:
+        - Jobs and Tasks
       summary: job_clear
       description: |
         Clear background job queues.
@@ -3939,8 +4209,10 @@ paths:
                   items:
                     type: string
   job_cancel:
-    delete:
+    post:
       operationId: job_cancel
+      tags:
+        - Jobs and Tasks
       summary: job_cancel
       description: |
         Cancel a queued background job.
@@ -3957,8 +4229,10 @@ paths:
                   type: string
                   description: The ID of the background job.
   api_token_revoke:
-    delete:
+    post:
       operationId: api_token_revoke
+      tags:
+        - Api Tokens
       summary: api_token_revoke
       description: |
         Delete API Token.
@@ -3977,3 +4251,255 @@ paths:
                   type: string
                   # Original docs don't capitalize D in ID and don't have space between remove and (
                   description: ID of the token to remove (overrides `token` if specified)
+  pnaig_create_regular_user:
+    post:
+      operationId: pnaig_create_regular_user
+      tags:
+        - Pnaig Api
+      summary: pnaig_create_regular_user
+      description: |
+        Create a regular user within PNAIG-CKAN
+
+        This endpoint allows you to create a regular user within PNAIG-CKAN. You can specify the user's name, email, and password. The user will be   created with regular permissions, meaning they will not have administrative privileges.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: The email address of the user to be created.
+                names:
+                  type: string
+                  description: The full name of the user to be created.
+                surnames:
+                  type: string
+                  description: The surname of the user to be created.
+                affiliation:
+                  type: string
+                  description: The affiliation of the user to be created.
+                country:
+                  type: string
+                  description: The country of the user to be created.
+                password:
+                  type: string
+                  description: The password for the user to be created.
+                password2:
+                  type: string
+                  description: Confirmation of the password for the user to be created.
+  pnaig_verify_user:
+    post:
+      operationId: pnaig_verify_user
+      tags:
+        - Pnaig Api
+      summary: pnaig_verify_user
+      description: |
+        Validate a new user within PNAIG-CKAN.
+
+        It requires a JWT token sent to the user's email address. This endpoint is used to validate a new user within PNAIG-CKAN. The user will receive a JWT token in their email, which they can use to verify their account and complete the registration process.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                  description: The JWT token sent to the user's email address for verification.
+  pnaig_send_password_reset_email:
+    post:
+      operationId: pnaig_send_password_reset_email
+      tags:
+        - Pnaig Api
+      summary: pnaig_send_password_reset_email
+      description: |
+        Send a password reset email to a user within PNAIG-CKAN.
+
+        This endpoint allows you to send a password reset email to a user within PNAIG-CKAN. The user will receive an email with instructions on how to reset their password.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: The email address of the user to receive the password reset email.
+  pnaig_reset_user_password:
+    post:
+      operationId: pnaig_reset_user_password
+      tags:
+        - Pnaig Api
+      summary: pnaig_reset_user_password
+      description: |
+        Reset a user's password within PNAIG-CKAN.
+
+        This endpoint allows you to reset a user's password within PNAIG-CKAN. The user will need to provide a JWT token received in their email and the new password they wish to set.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: The JWT token sent to the user's email address for password reset.
+                password:
+                  type: string
+                  description: The new password that the user wants to set.
+  pnaig_get_register_callback_url:
+    get:
+      operationId: pnaig_get_register_call_back_url
+      tags:
+        - Pnaig Api
+      summary: pnaig_get_register_call_back_url
+      description: |
+        Get the registration callback URL for PNAIG-CKAN.
+
+        This endpoint allows you to retrieve the registration callback URL for PNAIG-CKAN. This URL is used during the user registration process to redirect users after they have completed their registration.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  callback_url:
+                    type: string
+                    description: The registration callback URL for PNAIG-CKAN.
+  pnaig_get_user:
+    post:
+      operationId: pnaig_get_user
+      tags:
+        - Pnaig Api
+      summary: pnaig_get_user
+      description: |
+        Get user information within PNAIG-CKAN.
+
+        This endpoint allows you to retrieve information about a user within PNAIG-CKAN. You can specify the user's ID or email address to get their details.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: The ID or email address of the user to retrieve information for.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: The ID of the user.
+                  email:
+                    type: string
+                    description: The email address of the user.
+                  names:
+                    type: string
+                    description: The full name of the user.
+                  surnames:
+                    type: string
+                    description: The surname of the user.
+                  affiliation:
+                    type: string
+                    description: The affiliation of the user.
+                  country:
+                    type: string
+                    description: The country of the user.
+  pnaig_soft_delete_user:
+    post:
+      operationId: pnaig_soft_delete_user
+      tags:
+        - Pnaig Api
+      summary: pnaig_soft_delete_user
+      description: |
+        Soft delete a user within PNAIG-CKAN.
+
+        This endpoint allows you to soft delete a user within PNAIG-CKAN. Soft deleting a user means that the user's account will be deactivated, but their data will not be permanently removed from the system. The user will not be able to log in or access their account, but their information will still be retained for record-keeping purposes.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: The email address of the user to be soft deleted.
+  pnaig_hard_delete_user:
+    post:
+      operationId: pnaig_hard_delete_user
+      tags:
+        - Pnaig Api
+      summary: pnaig_hard_delete_user
+      description: |
+        Hard delete a user within PNAIG-CKAN.
+
+        This endpoint allows you to hard delete a user within PNAIG-CKAN. Hard deleting a user means that the user's account and all associated data will be permanently removed from the system. The user will not be able to log in or access their account, and all their information will be deleted from the database.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: The email address of the user to be hard deleted.
+  pnaig_update_user:
+    post:
+      operationId: pnaig_update_user
+      tags:
+        - Pnaig Api
+      summary: pnaig_update_user
+      description: |
+        Update user information within PNAIG-CKAN.
+
+        This endpoint allows you to update the information of a user within PNAIG-CKAN. You can specify the user's email address and the new information you want to update, such as their name, affiliation, or country.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: The email address of the user to be updated.
+                names:
+                  type: string
+                  description: The new full name of the user.
+                surnames:
+                  type: string
+                  description: The new surname of the user.
+                affiliation:
+                  type: string
+                  description: The new affiliation of the user.
+                role:
+                  type: string
+                  description: The new role of the user (e.g., 'admin', 'user').
+                country:
+                  type: string
+                  description: The new country of the user.
+                institutional_area:
+                  type: string
+                  description: The new institutional area of the user.
+                institutional_role:
+                  type: string
+                  description: The new institutional role of the user.
+                is_institutional:
+                  type: boolean
+                  description: Whether the user is an institutional user or not.
