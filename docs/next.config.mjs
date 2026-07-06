@@ -1,4 +1,4 @@
-import { createMDX } from 'fumadocs-mdx/next';
+import { createMDX } from "fumadocs-mdx/next";
 
 const withMDX = createMDX();
 
@@ -7,14 +7,17 @@ const config = {
   reactStrictMode: true,
   devIndicators: false,
   transpilePackages: ["shiki"],
+  allowedDevOrigins: process.env.ALLOWED_DEV_ORIGINS
+    ? process.env.ALLOWED_DEV_ORIGINS.split(",").map((s) => s.trim())
+    : ["http://localhost"],
   async rewrites() {
     return [
       {
         source: "/docs/:path*.mdx",
-        destination: "/llms.mdx/:path*"
-      }
-    ]
-  }
+        destination: "/llms.mdx/:path*",
+      },
+    ];
+  },
 };
 
 export default withMDX(config);
