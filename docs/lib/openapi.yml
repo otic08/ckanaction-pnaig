@@ -26,6 +26,7 @@ tags:
   - name: Tags and Vocabularies
   - name: Translations
   - name: Pnaig Api
+  - name: Scheming
   - name: General
 servers:
   - url: http://localhost:5000/api/3/action
@@ -95,7 +96,7 @@ paths:
       summary: current_package_list_with_resources
       description: |
         Return a list of the site's datasets (packages) and their resources.
-        
+
         The list is sorted most-recently-modified first.
       requestBody:
         required: false
@@ -318,15 +319,15 @@ paths:
       summary: organization_list_for_user
       description: |
         Return the organizations that the user has a given permission for.
-        
+
         Specifically it returns the list of organizations that the currently authorized user has a given permission (for example: "manage_group") against.
-        
+
         By default this returns the list of organizations that the currently authorized user is member of, in any capacity.
-        
+
         When a user becomes a member of an organization in CKAN they're given a "capacity" (sometimes called a "role"), for example "member", "editor" or "admin".
-        
+
         Each of these roles has certain permissions associated with it. For example the admin role has the "admin" permission (which means they have permission to do anything). The editor role has permissions like "create_dataset", "update_dataset" and "delete_dataset". The member role has the "read" permission.
-        
+
         This function returns the list of organizations that the authorized user has a given permission for. For example the list of organizations that the user is an admin of, or the list of organizations that the user can create datasets in. This takes account of when permissions cascade down an organization hierarchy.
       requestBody:
         required: true
@@ -613,7 +614,7 @@ paths:
                   description: "include the organization's tags (default: `True`)"
                 include_followers:
                   type: boolean
-                  description: "include the organization's number of followers (default: `True`)"                  
+                  description: "include the organization's number of followers (default: `True`)"
   group_package_show:
     post:
       operationId: group_package_show
@@ -665,7 +666,7 @@ paths:
       summary: user_show
       description: |
         Return a user account.
-        
+
         Either the `id` should be passed or the user should be logged in.
       requestBody:
         required: false
@@ -826,7 +827,7 @@ paths:
 
         <Callout title="Title" type="error">
         There is an issue for the Body dropdown within this UI where an empty object `{}` is set for the `facet` field.
-        
+
         Please either remove this field by clicking "Open JSON editor" in the Body dropdown or set it to `true` (the default value) or `false`.
         </Callout>
       requestBody:
@@ -1908,7 +1909,7 @@ paths:
       description: |
         Create a relationship between two datasets (packages).
 
-        You must be authorized to edit both the subject and the object datasets.        
+        You must be authorized to edit both the subject and the object datasets.
       requestBody:
         required: false
         content:
@@ -2518,7 +2519,7 @@ paths:
 
         <Callout title="Note">Update methods may delete parameters not explicitly provided in the data_dict. If you want to edit only a specific attribute use `package_patch` instead.</Callout>
 
-        It is recommended to call `ckan.logic.action.get.package_show()`, make the desired changes to the result, and then call `package_update()` with it.
+        It is recommended to call `ckan.logic.action.get.phttps://github.com/dathere/datapusher-plus.gitackage_show()`, make the desired changes to the result, and then call `package_update()` with it.
 
         Plugins may change the parameters of this function depending on the value of the dataset's `type` attribute, see the `IDatasetForm` plugin interface.
       requestBody:
@@ -2718,7 +2719,7 @@ paths:
         match__notes="old notes"
         update__notes="new notes"
         ```
-        
+
         - Replace all fields at dataset level only, keep resources (note: dataset id and type fields can’t be deleted)
 
         ```
@@ -3780,7 +3781,7 @@ paths:
         Purge a dataset.
 
         <Callout title="Warning!" type="warn">Purging a dataset cannot be undone!</Callout>
-        
+
         Purging a dataset completely removes the dataset from the CKAN database, whereas deleting a dataset simply marks the dataset as deleted (it will no longer show up in the front-end, but is still in the db).
 
         You must be authorized to purge the dataset.
@@ -4503,3 +4504,69 @@ paths:
                 is_institutional:
                   type: boolean
                   description: Whether the user is an institutional user or not.
+  scheming_organization_schema_list:
+    get:
+      operationId: scheming_organization_schema_list
+      tags:
+        - Scheming
+      summary: scheming_organization_schema_list
+      description: |
+        List organization schemas within PNAIG-CKAN.
+
+        This endpoint allows you to retrieve a list of organization schemas within PNAIG-CKAN.
+  scheming_dataset_schema_list:
+    get:
+      operationId: scheming_dataset_schema_list
+      tags:
+        - Scheming
+      summary: scheming_dataset_schema_list
+      description: |
+        List dataset schemas within PNAIG-CKAN.
+
+        This endpoint allows you to retrieve a list of dataset schemas within PNAIG-CKAN.
+  scheming_organization_schema_show:
+    get:
+      operationId: scheming_organization_schema_show
+      tags:
+        - Scheming
+      summary: scheming_organization_schema_show
+      description: |
+        Return the scheming schema for a given organization type.
+
+        This endpoint allows you to retrieve the scheming schema for a specific organization type within PNAIG-CKAN. You can specify the organization type to get its corresponding schema.
+      parameters:
+        - name: type
+          in: query
+          required: true
+          schema:
+            type: string
+          description: The id of the scheming organization schema installed on the CKAN instance.
+        - name: expanded
+          in: query
+          required: false
+          schema:
+            type: boolean
+          description: Whether to expand presets or not (True by default).
+  scheming_dataset_schema_show:
+    get:
+      operationId: scheming_dataset_schema_show
+      tags:
+        - Scheming
+      summary: scheming_dataset_schema_show
+      description: |
+        Return the scheming schema for a given dataset type.
+
+        This endpoint allows you to retrieve the scheming schema for a specific dataset type within PNAIG-CKAN. You can specify the dataset type to get its corresponding schema.
+      parameters:
+        - name: type
+          in: query
+          required: true
+          schema:
+            type: string
+          description: The id of the scheming dataset schema installed on the CKAN instance.
+        - name: expanded
+          in: query
+          required: false
+          schema:
+            type: boolean
+          description: Whether to expand presets or not (True by default).
