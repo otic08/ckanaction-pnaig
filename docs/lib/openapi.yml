@@ -4252,12 +4252,12 @@ paths:
                   type: string
                   # Original docs don't capitalize D in ID and don't have space between remove and (
                   description: ID of the token to remove (overrides `token` if specified)
-  pnaig_create_regular_user:
+  pnaig_user_create_regular_user:
     post:
-      operationId: pnaig_create_regular_user
+      operationId: pnaig_user_create_regular_user
       tags:
         - Pnaig Api
-      summary: pnaig_create_regular_user
+      summary: pnaig_user_create_regular_user
       description: |
         Create a regular user within PNAIG-CKAN
 
@@ -4290,12 +4290,12 @@ paths:
                 password2:
                   type: string
                   description: Confirmation of the password for the user to be created.
-  pnaig_verify_user:
+  pnaig_user_verify_user:
     post:
-      operationId: pnaig_verify_user
+      operationId: pnaig_user_verify_user
       tags:
         - Pnaig Api
-      summary: pnaig_verify_user
+      summary: pnaig_user_verify_user
       description: |
         Validate a new user within PNAIG-CKAN.
 
@@ -4310,12 +4310,12 @@ paths:
                 token:
                   type: string
                   description: The JWT token sent to the user's email address for verification.
-  pnaig_send_password_reset_email:
+  pnaig_user_send_password_reset_email:
     post:
-      operationId: pnaig_send_password_reset_email
+      operationId: pnaig_user_send_password_reset_email
       tags:
         - Pnaig Api
-      summary: pnaig_send_password_reset_email
+      summary: pnaig_user_send_password_reset_email
       description: |
         Send a password reset email to a user within PNAIG-CKAN.
 
@@ -4330,12 +4330,12 @@ paths:
                 email:
                   type: string
                   description: The email address of the user to receive the password reset email.
-  pnaig_reset_user_password:
+  pnaig_user_reset_user_password:
     post:
-      operationId: pnaig_reset_user_password
+      operationId: pnaig_user_reset_user_password
       tags:
         - Pnaig Api
-      summary: pnaig_reset_user_password
+      summary: pnaig_user_reset_user_password
       description: |
         Reset a user's password within PNAIG-CKAN.
 
@@ -4350,15 +4350,18 @@ paths:
                 email:
                   type: string
                   description: The JWT token sent to the user's email address for password reset.
-                password:
+                password1:
                   type: string
                   description: The new password that the user wants to set.
-  pnaig_get_register_callback_url:
+                password2:
+                  type: string
+                  description: The confirmation of the new password.
+  pnaig_user_get_register_callback_url:
     get:
-      operationId: pnaig_get_register_call_back_url
+      operationId: pnaig_user_get_register_call_back_url
       tags:
         - Pnaig Api
-      summary: pnaig_get_register_call_back_url
+      summary: pnaig_user_get_register_call_back_url
       description: |
         Get the registration callback URL for PNAIG-CKAN.
 
@@ -4374,12 +4377,12 @@ paths:
                   callback_url:
                     type: string
                     description: The registration callback URL for PNAIG-CKAN.
-  pnaig_get_user:
+  pnaig_user_get_user:
     post:
-      operationId: pnaig_get_user
+      operationId: pnaig_user_get_user
       tags:
         - Pnaig Api
-      summary: pnaig_get_user
+      summary: pnaig_user_get_user
       description: |
         Get user information within PNAIG-CKAN.
 
@@ -4420,12 +4423,12 @@ paths:
                   country:
                     type: string
                     description: The country of the user.
-  pnaig_soft_delete_user:
+  pnaig_user_soft_delete_user:
     post:
-      operationId: pnaig_soft_delete_user
+      operationId: pnaig_user_soft_delete_user
       tags:
         - Pnaig Api
-      summary: pnaig_soft_delete_user
+      summary: pnaig_user_soft_delete_user
       description: |
         Soft delete a user within PNAIG-CKAN.
 
@@ -4440,12 +4443,12 @@ paths:
                 email:
                   type: string
                   description: The email address of the user to be soft deleted.
-  pnaig_hard_delete_user:
+  pnaig_user_hard_delete_user:
     post:
-      operationId: pnaig_hard_delete_user
+      operationId: pnaig_user_hard_delete_user
       tags:
         - Pnaig Api
-      summary: pnaig_hard_delete_user
+      summary: pnaig_user_hard_delete_user
       description: |
         Hard delete a user within PNAIG-CKAN.
 
@@ -4460,12 +4463,12 @@ paths:
                 email:
                   type: string
                   description: The email address of the user to be hard deleted.
-  pnaig_update_user:
+  pnaig_user_update_user:
     post:
-      operationId: pnaig_update_user
+      operationId: pnaig_user_update_user
       tags:
         - Pnaig Api
-      summary: pnaig_update_user
+      summary: pnaig_user_update_user
       description: |
         Update user information within PNAIG-CKAN.
 
@@ -4504,6 +4507,29 @@ paths:
                 is_institutional:
                   type: boolean
                   description: Whether the user is an institutional user or not.
+  pnaig_user_login:
+    post:
+      operationId: pnaig_user_login
+      tags:
+        - Pnaig Api
+      summary: pnaig_user_login
+      description: |
+        User login within PNAIG-CKAN.
+
+        This endpoint allows a user to log in to PNAIG-CKAN. The user must provide their email address and password to authenticate and receive an access token for subsequent requests.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: The email address of the user attempting to log in.
+                password:
+                  type: string
+                  description: The password of the user attempting to log in.
   scheming_organization_schema_list:
     get:
       operationId: scheming_organization_schema_list
