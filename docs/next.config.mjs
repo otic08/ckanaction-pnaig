@@ -7,9 +7,7 @@ const config = {
   reactStrictMode: true,
   devIndicators: false,
   transpilePackages: ["shiki"],
-  allowedDevOrigins: process.env.ALLOWED_DEV_ORIGINS
-    ? process.env.ALLOWED_DEV_ORIGINS.split(",").map((s) => s.trim())
-    : ["http://localhost"],
+  allowedDevOrigins: ["10.10.230.219"],
   async rewrites() {
     return [
       {

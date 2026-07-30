@@ -29,7 +29,7 @@ tags:
   - name: Scheming
   - name: General
 servers:
-  - url: http://localhost:5000/api/3/action
+  - url: http://10.10.230.219:8080/api/3/action
   - url: '{protocol}://{domain}/api/3/action'
     description: Your custom server running the CKAN Actions API (v3).
     variables:
