@@ -290,6 +290,9 @@ paths:
                 include_users:
                   type: boolean
                   description: "if `all_fields`, include the organization users"
+                children_of:
+                  type: string
+                  description: "return only organizations that are children of the specified organization's id or name (default: `None`)"
   'group_list_authz':
     post:
       operationId: group_list_authz
