@@ -4599,3 +4599,33 @@ paths:
           schema:
             type: boolean
           description: Whether to expand presets or not (True by default).
+
+  pnaig_downloads_create_request:
+    post:
+      operationId: pnaig_downloads_create_request
+      tags:
+        - Pnaig Api
+      summary: pnaig_downloads_create_request
+      description: |
+        Create a download request within PNAIG-CKAN
+
+        This endpoint allows you to either create a download request for individual or bulk resources, or resolve a request with ready status into a valid download link.
+        It requires user authentication and authorization to create a download request for a specific dataset and resource(s).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                dataset_id:
+                  type: string
+                  description: The id of the dataset for which the download request is being created.
+                resource_id:
+                  type: string
+                  description: The id of the resource within the dataset for which the download request is being created.
+                resource_ids:
+                  type: array
+                  items:
+                    type: string
+                  description: A list of resource ids within the dataset for which the download request is being created.
