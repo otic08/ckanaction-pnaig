@@ -4607,10 +4607,9 @@ paths:
         - Pnaig Api
       summary: pnaig_downloads_create_request
       description: |
-        Create a download request within PNAIG-CKAN
+        Create a download request within PNAIG-CKAN.
 
-        This endpoint allows you to either create a download request for individual or bulk resources, or resolve a request with ready status into a valid download link.
-        It requires user authentication and authorization to create a download request for a specific dataset and resource(s).
+        This endpoint creates a download request for one or more resources. Accepted selection shapes are a single resource, a whole dataset, a list of resource ids, or a canonical `selections` array. It can return synchronously with a `ready` status and a download URL, or enqueue a background job for bulk or large selections.
       requestBody:
         required: true
         content:
@@ -4618,9 +4617,27 @@ paths:
             schema:
               type: object
               properties:
+                selections:
+                  type: array
+                  description: Canonical resource selections. Provide exactly one selection shape (this, dataset_id, resource_id, or resource_ids).
+                  items:
+                    type: object
+                    properties:
+                      type:
+                        type: string
+                        enum: [dataset, resources]
+                        description: Selection type.
+                      dataset_id:
+                        type: string
+                        description: The id of the dataset to download all resources from (when type is dataset).
+                      resource_ids:
+                        type: array
+                        items:
+                          type: string
+                        description: Resource ids to download (when type is resources).
                 dataset_id:
                   type: string
-                  description: The id of the dataset for which the download request is being created.
+                  description: The id of the dataset for which the download request is being created (all resources).
                 resource_id:
                   type: string
                   description: The id of the resource within the dataset for which the download request is being created.
@@ -4628,4 +4645,190 @@ paths:
                   type: array
                   items:
                     type: string
-                  description: A list of resource ids within the dataset for which the download request is being created.
+                  description: A list of resource ids for which the download request is being created.
+                params:
+                  type: object
+                  description: Optional transformation parameters for bulk artifacts (e.g., format, projection).
+                  additionalProperties: true
+                origin:
+                  type: string
+                  enum: [web_ui, api]
+                  default: web_ui
+                  description: Origin of the request.
+  pnaig_downloads_get_request:
+    post:
+      operationId: pnaig_downloads_get_request
+      tags:
+        - Pnaig Api
+      summary: pnaig_downloads_get_request
+      description: |
+        Return the status of a download request.
+
+        When the request has `ready` status, a freshly minted download token and download URL are included.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                request_id:
+                  type: string
+                  description: The id of the download request.
+  pnaig_downloads_list_requests:
+    post:
+      operationId: pnaig_downloads_list_requests
+      tags:
+        - Pnaig Api
+      summary: pnaig_downloads_list_requests
+      description: |
+        Return the paginated download request history for the authenticated PNAIG user.
+
+        Admins may pass `pnaig_user_id` to view another user's history.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pnaig_user_id:
+                  type: string
+                  description: PNAIG user id to filter by (admin only).
+                limit:
+                  type: integer
+                  description: Maximum number of results to return (default 20, max 100).
+                offset:
+                  type: integer
+                  description: Offset for pagination.
+  pnaig_downloads_cancel_request:
+    post:
+      operationId: pnaig_downloads_cancel_request
+      tags:
+        - Pnaig Api
+      summary: pnaig_downloads_cancel_request
+      description: |
+        Cancel a download request.
+
+        Only `pending` or `processing` requests can be cancelled.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                request_id:
+                  type: string
+                  description: The id of the download request to cancel.
+  pnaig_downloads_get_stats:
+    post:
+      operationId: pnaig_downloads_get_stats
+      tags:
+        - Pnaig Api
+      summary: pnaig_downloads_get_stats
+      description: |
+        Return download request aggregates.
+
+        Returns counts of requested downloads from `pnaig_download_request` and, when `ckanext-pnaig-audit` is loaded, actual transfer aggregates from the audit trail. Restricted to PNAIG admin users.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                package_id:
+                  type: string
+                  description: Restrict stats to a single dataset.
+                since:
+                  type: string
+                  format: date-time
+                  description: Start of the time window (ISO 8601).
+                until:
+                  type: string
+                  format: date-time
+                  description: End of the time window (ISO 8601).
+                origin:
+                  type: string
+                  enum: [web_ui, api]
+                  description: Filter by request origin.
+  pnaig_audit_get_history:
+    post:
+      operationId: pnaig_audit_get_history
+      tags:
+        - Pnaig Api
+      summary: pnaig_audit_get_history
+      description: |
+        Return the paginated audit event history for the authenticated PNAIG user, newest first.
+
+        Non-admins always see their own history; admins may filter by any user.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pnaig_user_id:
+                  type: string
+                  description: PNAIG user id to filter by (admin only).
+                action:
+                  type: string
+                  enum: [download.requested, download.denied, download.cancelled, download.started, download.completed, download.aborted, download.rejected, download.ready, download.failed, download.expired]
+                  description: Filter by event action.
+                object_type:
+                  type: string
+                  description: Filter by object type (e.g., dataset).
+                object_id:
+                  type: string
+                  description: Filter by object id (e.g., dataset id).
+                request_id:
+                  type: string
+                  description: Filter by download request id.
+                since:
+                  type: string
+                  format: date-time
+                  description: Start of the time window (ISO 8601).
+                until:
+                  type: string
+                  format: date-time
+                  description: End of the time window (ISO 8601).
+                limit:
+                  type: integer
+                  description: Maximum number of results to return (default 20, max 100).
+                offset:
+                  type: integer
+                  description: Offset for pagination.
+  pnaig_audit_get_download_stats:
+    post:
+      operationId: pnaig_audit_get_download_stats
+      tags:
+        - Pnaig Api
+      summary: pnaig_audit_get_download_stats
+      description: |
+        Return effective-download aggregates.
+
+        Computes actual transfer counts and per-dataset counters from the audit trail. Restricted to PNAIG admin users.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                package_id:
+                  type: string
+                  description: Restrict stats to a single dataset.
+                since:
+                  type: string
+                  format: date-time
+                  description: Start of the time window (ISO 8601).
+                until:
+                  type: string
+                  format: date-time
+                  description: End of the time window (ISO 8601).
+                origin:
+                  type: string
+                  enum: [web_ui, api]
+                  description: Filter by download origin.
