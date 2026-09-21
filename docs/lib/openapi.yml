@@ -4608,7 +4608,7 @@ paths:
     post:
       operationId: pnaig_downloads_create_request
       tags:
-        - PNAIG Download
+        - PNAIG Downloads
       summary: pnaig_downloads_create_request
       description: |
         Create a download request within PNAIG-CKAN.
